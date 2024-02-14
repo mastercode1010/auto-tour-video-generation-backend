@@ -29,7 +29,7 @@ class UserRegistrationAPIView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response({"status": True, "data": "User registered successfully."}, status=201)
-        return Response({"status": False, "data": serializer.errors}, status=400)
+        return Response({"status": False, "data": "email is already existed."}, status=400)
 
 class UserLoginAPIView(APIView):
     permission_classes = [AllowAny]
