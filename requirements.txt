@@ -1,0 +1,9 @@
+Django
+djangorestframework
+django-celery-results
+django-celery-beat
+celery
+moviepy
+djangorestframework-simplejwt
+django-cors-headers
+django-sslserver
