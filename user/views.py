@@ -41,7 +41,7 @@ class UserLoginAPIView(APIView):
                 "status": True,
                 "data": serializer.validated_data
             }, status=200)
-        return Response({"status": False, "data": "Invalid email or password"}, status=400)
+        return Response({"status": False, "data": {"msg": "Invalid email or password"}}, status=200)
 
 class PasswordResetRequestAPIView(APIView):
     permission_classes = [AllowAny]
