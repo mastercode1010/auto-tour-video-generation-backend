@@ -9,6 +9,7 @@ from django.core.files.storage import default_storage
 from rest_framework.parsers import MultiPartParser, FormParser
 
 class HeaderAPIView(APIView):
+    
     permission_classes = [IsAuthenticated]
     parser_classes = (MultiPartParser, FormParser)
     
@@ -18,6 +19,7 @@ class HeaderAPIView(APIView):
         return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
 
 class HeaderAddAPIView(APIView):
+    
     permission_classes = [IsAdmin]
     parser_classes = (MultiPartParser, FormParser)
     
@@ -29,6 +31,7 @@ class HeaderAddAPIView(APIView):
         return Response({"status": False, "data": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 class HeaderDeleteAPIView(APIView):
+    
     parser_classes = (MultiPartParser, FormParser)
     def post(self, request, *args, **kwargs):
         header_id = request.data.get('header_id')
@@ -53,6 +56,7 @@ class HeaderDeleteAPIView(APIView):
             return Response({"status": False, "data": {"msg": str(e)}}, status=status.HTTP_400_BAD_REQUEST)
 
 class FooterAPIView(APIView):
+    
     parser_classes = (MultiPartParser, FormParser)
     permission_classes = [IsAuthenticated]
     
@@ -62,6 +66,7 @@ class FooterAPIView(APIView):
         return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
 
 class FooterAddAPIView(APIView):
+    
     parser_classes = (MultiPartParser, FormParser)
     permission_classes = [IsAdmin]
     
@@ -73,7 +78,9 @@ class FooterAddAPIView(APIView):
         return Response({"status": False, "data": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 class FooterDeleteAPIView(APIView):
+    
     parser_classes = (MultiPartParser, FormParser)
+    
     def post(self, request, *args, **kwargs):
         footer_id = request.data.get('footer_id')
         if not footer_id:

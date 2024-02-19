@@ -175,6 +175,7 @@ CORS_ALLOW_HEADERS = [
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
+    'Cache-control',
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True  # Not recommended for production
