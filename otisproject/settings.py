@@ -23,10 +23,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-!uv7)7w!(d&kzk$b+go0m-0t7ugq*yvv%p*5+w(e^i(urfp0oo'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["localhost","*","127.0.0.1"]
 
+WSGI_APPLICATION = 'otisproject.wsgi.application'
+STATIC_URL = '/static/'
+
+STATIC_ROOT=os.path.join(BASE_DIR, 'static')
 
 # Application definition
 
@@ -161,4 +165,17 @@ ALLOWED_HOSTS = ['*']
 # CORS_ALLOWED_ORIGINS = [
 #     "http://192.168.40.23:3000",
 # ]
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
 CORS_ALLOW_ALL_ORIGINS = True  # Not recommended for production
+CORS_ORIGIN_ALLOW_ALL = True

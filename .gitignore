@@ -1,2 +1,5 @@
-user/__pycache__/models.cpython-310.pyc
-user/__pycache__/views.cpython-310.pyc
+user/__pycache__/
+user/migrations/
+management/__pycache__/
+management/migrations/
+static/
