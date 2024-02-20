@@ -33,6 +33,8 @@ class HeaderAddAPIView(APIView):
 class HeaderDeleteAPIView(APIView):
     
     parser_classes = (MultiPartParser, FormParser)
+    permission_classes = [IsAdmin]
+    
     def post(self, request, *args, **kwargs):
         header_id = request.data.get('header_id')
         if not header_id:
@@ -80,6 +82,7 @@ class FooterAddAPIView(APIView):
 class FooterDeleteAPIView(APIView):
     
     parser_classes = (MultiPartParser, FormParser)
+    permission_classes = [IsAdmin]
     
     def post(self, request, *args, **kwargs):
         footer_id = request.data.get('footer_id')

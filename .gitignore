@@ -4,3 +4,5 @@ management/__pycache__/
 management/migrations/
 static/
 media/
+staticfiles/
+headers/
