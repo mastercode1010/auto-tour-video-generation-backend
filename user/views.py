@@ -13,12 +13,14 @@ from .serializers import (
     PasswordResetRequestSerializer, 
     PasswordResetSerializer,
     UserUpdateSerializer,
-    UserListSerializer
+    UserListSerializer,
+    UserDetailSerializer,
 )
 from .models import User
 from .permissions import IsAdmin
 from rest_framework import status
 from rest_framework.generics import ListAPIView
+from django.shortcuts import get_object_or_404
 
 class UserRegistrationAPIView(APIView):
     permission_classes = [AllowAny]
@@ -103,6 +105,14 @@ class UserRangeListAPIView(ListAPIView):
             end_row_index = int(end_row_index)
             return queryset[start_row_index:end_row_index]
         return queryset
+
+class GetUserByIdAPIView(APIView):
+    permission_classes = [IsAdmin]  # Or adjust as per your security requirements
+
+    def get(self, request, pk, format=None):
+        user = get_object_or_404(User, pk=pk)
+        serializer = UserDetailSerializer(user)
+        return Response(serializer.data)
 
 class PasswordResetRequestAPIView(APIView):
     permission_classes = [AllowAny]

@@ -53,6 +53,11 @@ class UserListSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'email', 'phone_number', 'street', 'user_type', 'user_avatar', 'contact_email', 'contact_name', 'contact_phone_number']  # Exclude 'password'
         read_only_fields = fields
 
+class UserDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        exclude = ('password',)  # Exclude password from the serialized data
+
 class UserLoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField()

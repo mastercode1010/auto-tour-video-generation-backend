@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import UserRegistrationAPIView, UserLoginAPIView, PasswordResetRequestAPIView, PasswordResetAPIView, UserDeleteAPIView, UserUpdateAPIView, UserRangeListAPIView
+from .views import UserRegistrationAPIView, UserLoginAPIView, PasswordResetRequestAPIView, PasswordResetAPIView, UserDeleteAPIView, UserUpdateAPIView, UserRangeListAPIView, GetUserByIdAPIView
 
 urlpatterns = [
     path('register', UserRegistrationAPIView.as_view(), name='auth_register'),
@@ -9,4 +9,5 @@ urlpatterns = [
     path('delete', UserDeleteAPIView.as_view(), name='user_delete'),
     path('update', UserUpdateAPIView.as_view(), name='user-update'),
     path('users/range', UserRangeListAPIView.as_view(), name='user-range-list'),
+    path('user/<int:pk>', GetUserByIdAPIView.as_view(), name='get-user-by-id')
 ]
