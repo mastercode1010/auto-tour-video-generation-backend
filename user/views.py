@@ -1,7 +1,7 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.core.mail import send_mail
+# from django.core.mail import send_mail
 from django.urls import reverse
 from django.conf import settings
 from rest_framework.views import APIView
@@ -11,9 +11,14 @@ from .serializers import (
     UserRegistrationSerializer, 
     UserLoginSerializer, 
     PasswordResetRequestSerializer, 
-    PasswordResetSerializer
+    PasswordResetSerializer,
+    UserUpdateSerializer,
+    UserListSerializer
 )
 from .models import User
+from .permissions import IsAdmin
+from rest_framework import status
+from rest_framework.generics import ListAPIView
 
 class UserRegistrationAPIView(APIView):
     permission_classes = [AllowAny]
@@ -25,11 +30,29 @@ class UserRegistrationAPIView(APIView):
         del userdata["state"]
         del userdata["country"]
         del userdata["zipcode"]
-        serializer = UserRegistrationSerializer(data=request.data)
+        serializer = UserRegistrationSerializer(data=userdata)
         if serializer.is_valid():
             serializer.save()
             return Response({"status": True, "data": "User registered successfully."}, status=201)
         return Response({"status": False, "data": "email is already existed."}, status=400)
+
+class UserDeleteAPIView(APIView):
+    
+    permission_classes = [IsAdmin]
+    
+    def post(self, request, *args, **kwargs):
+        user_id = request.data.get('user_id')
+        if not user_id:
+            return Response({"status": False, "data": {"msg": "User ID is required."}}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            user = User.objects.get(id=user_id)
+            user.delete()
+            return Response({"status": True}, status=status.HTTP_200_OK)
+        except user.DoesNotExist:
+            return Response({"status": False, "data": {"msg": "User not found."}}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"status": False, "data": {"msg": str(e)}}, status=status.HTTP_400_BAD_REQUEST)
 
 class UserLoginAPIView(APIView):
     permission_classes = [AllowAny]
@@ -37,11 +60,49 @@ class UserLoginAPIView(APIView):
     def post(self, request):
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid():
+            # send_mail('Video Aggregation', 'Videolink: {"http://localhost:8000/media"/{output_file}}', settings.EMAIL_HOST_USER, ["codemaster9428@gmail.com"], fail_silently=False,)
             return Response({
                 "status": True,
                 "data": serializer.validated_data
             }, status=200)
         return Response({"status": False, "data": {"msg": "Invalid email or password"}}, status=200)
+
+class UserUpdateAPIView(APIView):
+    permission_classes = [IsAdmin]
+
+    def patch(self, request, *args, **kwargs):
+        user_id = request.data['user_id']
+        user = User.objects.get(id = user_id)
+        userdata = request.data
+        userdata["street"] = userdata["street"] + '_' + userdata["city"] + '_' + userdata["state"] +  '_' + userdata["country"] + '_' + userdata["zipcode"]
+        del userdata["city"]
+        del userdata["state"]
+        del userdata["country"]
+        del userdata["zipcode"]
+        serializer = UserUpdateSerializer(user, data=userdata, partial=True)  # Allow partial update
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UserRangeListAPIView(ListAPIView):
+    serializer_class = UserListSerializer
+    permission_classes = [IsAdmin]  # Assuming you want this endpoint to be protected
+
+    def get_queryset(self):
+        """
+        Optionally restricts the returned users to a given range,
+        by filtering against a `start_row_index` and `end_row_index` query parameter in the URL.
+        """
+        queryset = User.objects.all()
+        start_row_index = self.request.query_params.get('start_row_index', None)
+        end_row_index = self.request.query_params.get('end_row_index', None)
+
+        if start_row_index is not None and end_row_index is not None:
+            start_row_index = int(start_row_index)
+            end_row_index = int(end_row_index)
+            return queryset[start_row_index:end_row_index]
+        return queryset
 
 class PasswordResetRequestAPIView(APIView):
     permission_classes = [AllowAny]

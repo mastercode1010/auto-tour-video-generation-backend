@@ -40,14 +40,14 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'livesync',
+    # 'livesync',
     'django.contrib.staticfiles',
     'user',
     'management',
     'rest_framework',
     'sslserver',
     'corsheaders',
-    'livereload',
+    # 'livereload',
 ]
 
 MIDDLEWARE = [
@@ -60,8 +60,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'livesync.core.middleware.DjangoLiveSyncMiddleware',
-    'livereload.middleware.LiveReloadScript',
+    # 'livesync.core.middleware.DjangoLiveSyncMiddleware',
+    # 'livereload.middleware.LiveReloadScript',
 ]
 
 ROOT_URLCONF = 'otisproject.urls'
@@ -189,3 +189,10 @@ CORS_ALLOW_HEADERS = [
 
 CORS_ALLOW_ALL_ORIGINS = True  # Not recommended for production
 CORS_ORIGIN_ALLOW_ALL = True
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'otis1880town@gmail.com'
+EMAIL_HOST_PASSWORD = 'JackBox729@'

@@ -6,3 +6,6 @@ static/
 media/
 staticfiles/
 headers/
+gmailsender/credentials.json
+gmailsender/token.pickle
+gmailsender/__pycache__

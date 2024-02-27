@@ -29,6 +29,29 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         validated_data.pop('confirm_password')
         user = User.objects.create_user(**validated_data)
         return user
+    
+class UserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'phone_number', 'street', 'user_avatar', 'contact_email', 'contact_name', 'contact_phone_number')
+
+    def update(self, instance, validated_data):
+        instance.username = validated_data.get('username', instance.username)
+        instance.email = validated_data.get('email', instance.email)
+        instance.phone_number = validated_data.get('phone_number', instance.phone_number)
+        instance.street = validated_data.get('street', instance.street)
+        instance.user_avatar = validated_data.get('user_avatar', instance.user_avatar)
+        instance.contact_email = validated_data.get('contact_email', instance.contact_email)
+        instance.contact_name = validated_data.get('contact_name', instance.contact_name)
+        instance.contact_phone_number = validated_data.get('contact_phone_number', instance.contact_phone_number)
+        instance.save()
+        return instance
+
+class UserListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'phone_number', 'street', 'user_type', 'user_avatar', 'contact_email', 'contact_name', 'contact_phone_number']  # Exclude 'password'
+        read_only_fields = fields
 
 class UserLoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
