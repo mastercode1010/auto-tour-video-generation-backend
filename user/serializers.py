@@ -50,7 +50,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'email', 'phone_number', 'street', 'user_type', 'user_avatar', 'contact_email', 'contact_name', 'contact_phone_number']  # Exclude 'password'
+        fields = ['id', 'username', 'email', 'phone_number', 'street', 'user_type', 'user_avatar', 'contact_email', 'contact_name', 'contact_phone_number']  # Exclude 'password'
         read_only_fields = fields
 
 class UserLoginSerializer(serializers.Serializer):
