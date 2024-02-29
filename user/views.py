@@ -72,7 +72,7 @@ class UserLoginAPIView(APIView):
 class UserUpdateAPIView(APIView):
     permission_classes = [IsAdmin]
 
-    def patch(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         user_id = request.data['user_id']
         user = User.objects.get(id = user_id)
         userdata = request.data
