@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    # 'livesync',
     'django.contrib.staticfiles',
     'user',
     'management',
@@ -48,7 +47,6 @@ INSTALLED_APPS = [
     'sslserver',
     'corsheaders',
     'customer'
-    # 'livereload',
 ]
 
 MIDDLEWARE = [
@@ -61,8 +59,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    # 'livesync.core.middleware.DjangoLiveSyncMiddleware',
-    # 'livereload.middleware.LiveReloadScript',
 ]
 
 ROOT_URLCONF = 'otisproject.urls'
