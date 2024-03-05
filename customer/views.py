@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from .serializers import (
     ClientSerializer, 
-    # ChildrenRegistrationSerializer, 
+    ChildrenSerializer, 
     # FacialPictureRegistrationSerializer,
 )
 from .models import Client, FacialPictures
@@ -20,32 +20,9 @@ from django.shortcuts import get_object_or_404
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.http import JsonResponse
 
-# def facial_picture_scrap(clientdata, client_id, face_type = 0):
-#     facial_picture_1 = {}
-#     facial_picture_2 = {}
-#     facial_picture_3 = {}
-#     facial_picture_4 = {}
-#     facial_picture_1["side_key"] = 1
-#     facial_picture_2["side_key"] = 2
-#     facial_picture_3["side_key"] = 3
-#     facial_picture_4["side_key"] = 4
-#     facial_picture_1["img_url"] = clientdata["front_1_file"]
-#     facial_picture_2["img_url"] = clientdata["front_2_file"]
-#     facial_picture_3["img_url"] = clientdata["left_file"]
-#     facial_picture_4["img_url"] = clientdata["right_file"]
-#     facial_picture_1["client_id"] = client_id
-#     facial_picture_2["client_id"] = client_id
-#     facial_picture_3["client_id"] = client_id
-#     facial_picture_4["client_id"] = client_id
-#     facial_picture_1["face_type"] = face_type
-#     facial_picture_2["face_type"] = face_type
-#     facial_picture_3["face_type"] = face_type
-#     facial_picture_4["face_type"] = face_type
-#     return facial_picture_1, facial_picture_2, facial_picture_3, facial_picture_4
-
 # Create your views here.
 class ClientRegistrationAPIView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsCustomer]
 
     parser_classes = (MultiPartParser, FormParser)
     
@@ -66,3 +43,44 @@ class ClientRegistrationAPIView(APIView):
             return JsonResponse({"status": True, "data": client_serializer.data})
         else:
             return JsonResponse({"status": False, "errors": client_serializer.errors}, status=400)
+        
+    def get(self, request):
+        customer_id = request.query_params.get('customer_id')
+        if customer_id is not None:
+            clients = Client.objects.filter(customer_id=customer_id)
+            serializer = ClientSerializer(clients, many=True)
+            return Response({'status': True, 'data': serializer.data})
+        else:
+            return Response({'status': False, 'error': 'Customer ID is required'}, status=400)
+
+class ChildrenRegistrationAPIView(APIView):
+    permission_classes = [IsCustomer]
+
+    parser_classes = (MultiPartParser, FormParser)
+    
+    def post(self, request):
+        children_serializer = ChildrenSerializer(data=request.data)
+        if children_serializer.is_valid():
+            child = children_serializer.save()
+            
+            files = {
+                'front_1_file': request.FILES.get('front_1_file'),
+                'front_2_file': request.FILES.get('front_2_file'),
+                'left_file': request.FILES.get('left_file'),
+                'right_file': request.FILES.get('right_file'),
+            }
+            side_keys = [1, 2, 3, 4]
+            
+            for file_key, side_key in zip(files.keys(), side_keys):
+                if files[file_key]:
+                    FacialPictures.objects.create(
+                        client_id=child.id,  # Assuming this refers correctly to the child id for face_type = 1
+                        img_url=files[file_key],
+                        side_key=side_key,
+                        face_type=1,  # As specified, always 1 for this API
+                        date=child.date  # Using the date from the child object
+                    )
+                    
+            return JsonResponse({'status': 'success', 'message': 'Child and photos added successfully'}, status=status.HTTP_201_CREATED)
+        else:
+            return JsonResponse({'status': 'error', 'errors': children_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)

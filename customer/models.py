@@ -17,7 +17,7 @@ class Client(models.Model):
         db_table = 'client_tbl'
 
 class Children(models.Model):
-    client = models.ForeignKey(Client, on_delete=models.CASCADE)
+    client_id = models.IntegerField()
     children_name = models.CharField(max_length=255)
     date = models.DateTimeField(auto_now=True)
 
@@ -25,6 +25,7 @@ class Children(models.Model):
         db_table = 'children_tbl'
 
 class FacialPictures(models.Model):
+    SIDE_CHOICES = [(1, 'Front 1'), (2, 'Front 2'), (3, 'Left'), (4, 'Right')]
     side_key = models.IntegerField()
     img_url = models.ImageField(upload_to='facial_pictures/')
     client_id = models.IntegerField()
@@ -33,10 +34,3 @@ class FacialPictures(models.Model):
 
     class Meta:
         db_table = 'facial_pictures_tbl'
-
-    def save(self, *args, **kwargs):
-        if self.face_type == 1 and not self.children:
-            raise ValueError("For face_type 1, children must be set.")
-        elif self.face_type == 0:
-            self.children = None
-        super(FacialPictures, self).save(*args, **kwargs)
