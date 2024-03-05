@@ -50,31 +50,3 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
-
-from django.db import models
-
-class Parent(models.Model):
-    parent_name = models.CharField(max_length=255)
-    parent_type = models.IntegerField()
-    parent_email = models.EmailField()
-    user = models.ForeignKey('User', on_delete=models.CASCADE)  # Assuming 'User' is your user model
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    class Meta:
-        db_table = 'parent_tbl'
-
-class Face(models.Model):
-    front_img_path = models.ImageField(upload_to='faces/front/')
-    left_img_path = models.ImageField(upload_to='faces/left/')
-    right_img_path = models.ImageField(upload_to='faces/right/')
-    
-    user_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    user_object = GenericForeignKey('user_type', 'object_id')
-    
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    class Meta:
-        db_table = 'face_tbl'

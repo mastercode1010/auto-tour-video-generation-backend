@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'sslserver',
     'corsheaders',
+    'customer'
     # 'livereload',
 ]
 
