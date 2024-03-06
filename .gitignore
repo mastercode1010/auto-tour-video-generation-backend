@@ -9,3 +9,4 @@ headers/
 gmailsender/credentials.json
 gmailsender/token.pickle
 gmailsender/__pycache__
+customer/__pycache__

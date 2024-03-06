@@ -25,7 +25,7 @@ class ClientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Client
-        fields = ['id', 'customer_id', 'client_name', 'client_email', 'get_same_video', 'appears_in_other_video', 'voice_can_be_recorded', 'be_shown_potential', 'be_shown_public_business', 'be_shown_social_media', 'date', 'children', 'photos']
+        fields = ['id', 'customer_id', 'client_name', 'client_email', 'get_same_video', 'appears_in_others_video', 'voice_can_be_recorded', 'be_shown_potential', 'be_shown_public_business', 'be_shown_social_media', 'date', 'children', 'photos']
 
     def get_children(self, obj):
         children = Children.objects.filter(client_id=obj.id)

@@ -6,7 +6,7 @@ class Client(models.Model):
     client_name = models.CharField(max_length=255)
     client_email = models.EmailField()
     get_same_video = models.BooleanField(default=False)
-    appears_in_other_video = models.BooleanField(default=False)
+    appears_in_others_video = models.BooleanField(default=False)
     voice_can_be_recorded = models.BooleanField(default=False)
     be_shown_potential = models.BooleanField(default=False)
     be_shown_public_business = models.BooleanField(default=False)
