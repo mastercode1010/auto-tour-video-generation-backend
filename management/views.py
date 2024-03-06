@@ -4,7 +4,7 @@ from rest_framework import status
 from .models import Header, Footer
 from .serializers import HeaderSerializer, FooterSerializer
 from rest_framework.permissions import IsAuthenticated
-from user.permissions import IsAdmin, IsCustomer
+from user.permissions import IsAdmin, IsCustomer, IsAdminOrCustomer
 from django.core.files.storage import default_storage
 from rest_framework.parsers import MultiPartParser, FormParser
 
@@ -20,7 +20,7 @@ class HeaderAPIView(APIView):
 
 class HeaderAddAPIView(APIView):
     
-    permission_classes = [IsAdmin, IsCustomer]
+    permission_classes = [IsAdminOrCustomer]
     parser_classes = (MultiPartParser, FormParser)
     
     def post(self, request):
@@ -33,7 +33,7 @@ class HeaderAddAPIView(APIView):
 class HeaderDeleteAPIView(APIView):
     
     parser_classes = (MultiPartParser, FormParser)
-    permission_classes = [IsAdmin, IsCustomer]
+    permission_classes = [IsAdminOrCustomer]
     
     def post(self, request, *args, **kwargs):
         header_id = request.data.get('header_id')
@@ -70,7 +70,7 @@ class FooterAPIView(APIView):
 class FooterAddAPIView(APIView):
     
     parser_classes = (MultiPartParser, FormParser)
-    permission_classes = [IsAdmin, IsCustomer]
+    permission_classes = [IsAdminOrCustomer]
     
     def post(self, request):
         serializer = FooterSerializer(data=request.data)
@@ -82,7 +82,7 @@ class FooterAddAPIView(APIView):
 class FooterDeleteAPIView(APIView):
     
     parser_classes = (MultiPartParser, FormParser)
-    permission_classes = [IsAdmin, IsCustomer]
+    permission_classes = [IsAdminOrCustomer]
     
     def post(self, request, *args, **kwargs):
         footer_id = request.data.get('footer_id')

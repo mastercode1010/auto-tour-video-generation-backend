@@ -15,3 +15,7 @@ class IsClerk(permissions.BasePermission):
 class IsClient(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.user_type == 4
+class IsAdminOrCustomer(permissions.BasePermission):
+    def has_permission(self, request, view):
+        # Assuming user_type of 1 is Admin and 2 is Customer
+        return request.user.is_authenticated and request.user.user_type in [1, 2]
