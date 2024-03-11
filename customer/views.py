@@ -90,9 +90,12 @@ class GetClientByIdAPIView(APIView):
     permission_classes = [IsAdminOrCustomer]  # Or adjust as per your security requirements
 
     def get(self, request, pk, format=None):
-        client = get_object_or_404(Client, pk=pk)
-        serializer = ClientDetailSerializer(client)
-        return Response(serializer.data)
+        try:
+            client = Client.objects.get(pk=pk)
+            serializer = ClientDetailSerializer(client)
+            return Response({'status': True, 'data': serializer.data})
+        except Client.DoesNotExist:
+            return Response({'status': False})
     
 class ClientDeleteAPIView(APIView):
     
