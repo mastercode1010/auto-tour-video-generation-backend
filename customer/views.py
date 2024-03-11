@@ -10,7 +10,8 @@ from rest_framework.permissions import AllowAny
 from .serializers import (
     ClientSerializer, 
     ChildrenSerializer,
-    ClientDetailSerializer, 
+    ClientDetailSerializer,
+    ClientUpdateSerializer 
     # FacialPictureRegistrationSerializer,
 )
 from .models import Client, FacialPictures
@@ -115,3 +116,17 @@ class ClientDeleteAPIView(APIView):
             return Response({"status": False, "data": {"msg": "Client not found."}}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"status": False, "data": {"msg": str(e)}}, status=status.HTTP_400_BAD_REQUEST)
+
+class ClientUpdateAPIView(APIView):
+    permission_classes = [IsAdminOrCustomer]
+
+    def post(self, request, *args, **kwargs):
+        client_id = request.data['client_id']
+        user = Client.objects.get(id = client_id)
+        userdata = request.data
+        # print(userdata)
+        serializer = ClientUpdateSerializer(user, data=userdata, partial=True)  # Allow partial update
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
