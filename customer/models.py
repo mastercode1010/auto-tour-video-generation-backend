@@ -17,7 +17,7 @@ class Client(models.Model):
         db_table = 'client_tbl'
 
 class Children(models.Model):
-    client_id = models.IntegerField()
+    client = models.ForeignKey(Client, on_delete=models.CASCADE)
     children_name = models.CharField(max_length=255)
     date = models.DateTimeField(auto_now=True)
 
@@ -28,7 +28,7 @@ class FacialPictures(models.Model):
     SIDE_CHOICES = [(1, 'Front 1'), (2, 'Front 2'), (3, 'Left'), (4, 'Right')]
     side_key = models.IntegerField()
     img_url = models.ImageField(upload_to='facial_pictures/')
-    client_id = models.IntegerField()
+    client = models.ForeignKey(Client, on_delete=models.CASCADE)
     face_type = models.IntegerField()
     date = models.DateTimeField(auto_now=True)
 

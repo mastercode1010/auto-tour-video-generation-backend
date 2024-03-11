@@ -34,3 +34,9 @@ class ClientSerializer(serializers.ModelSerializer):
     def get_photos(self, obj):
         photos = FacialPictures.objects.filter(client_id=obj.id, face_type=0)
         return PhotoSerializer(photos, many=True).data
+
+
+class ClientDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Client
+        exclude = ()  # Exclude password from the serialized data

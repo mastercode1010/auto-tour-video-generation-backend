@@ -9,11 +9,12 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from .serializers import (
     ClientSerializer, 
-    ChildrenSerializer, 
+    ChildrenSerializer,
+    ClientDetailSerializer, 
     # FacialPictureRegistrationSerializer,
 )
 from .models import Client, FacialPictures
-from user.permissions import IsCustomer, IsAdmin
+from user.permissions import IsCustomer, IsAdmin, IsAdminOrCustomer
 from rest_framework import status
 from rest_framework.generics import ListAPIView
 from django.shortcuts import get_object_or_404
@@ -84,3 +85,30 @@ class ChildrenRegistrationAPIView(APIView):
             return JsonResponse({'status': 'success', 'message': 'Child and photos added successfully'}, status=status.HTTP_201_CREATED)
         else:
             return JsonResponse({'status': 'error', 'errors': children_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        
+class GetClientByIdAPIView(APIView):
+    permission_classes = [IsAdminOrCustomer]  # Or adjust as per your security requirements
+
+    def get(self, request, pk, format=None):
+        client = get_object_or_404(Client, pk=pk)
+        serializer = ClientDetailSerializer(client)
+        return Response(serializer.data)
+    
+class ClientDeleteAPIView(APIView):
+    
+    permission_classes = [IsAdminOrCustomer]
+    
+    def post(self, request, *args, **kwargs):
+        client_id = request.data.get('client_id')
+        if not client_id:
+            return Response({"status": False, "data": {"msg": "Client ID is required."}}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            client = Client.objects.get(id=client_id)
+            
+            client.delete()
+            return Response({"status": True}, status=status.HTTP_200_OK)
+        except client.DoesNotExist:
+            return Response({"status": False, "data": {"msg": "Client not found."}}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"status": False, "data": {"msg": str(e)}}, status=status.HTTP_400_BAD_REQUEST)
