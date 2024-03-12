@@ -15,7 +15,7 @@ class HeaderAPIView(APIView):
     
     def get(self, request):
         customer_id = request.query_params.get('customer_id')
-        if customer_id == -1:
+        if customer_id == '-1':
             headers = Header.objects.all()
         else:    
             headers = Header.objects.filter(user_id=customer_id)
@@ -68,10 +68,12 @@ class FooterAPIView(APIView):
     
     def get(self, request):
         customer_id = request.query_params.get('customer_id')
-        if customer_id == -1:
-            footers = Header.objects.all()
+        print(customer_id)
+        if customer_id == '-1':
+            footers = Footer.objects.all()
         else:    
-            footers = Header.objects.filter(user_id=customer_id)
+            footers = Footer.objects.filter(user_id=customer_id)
+            # print(footers)
         serializer = FooterSerializer(footers, many=True)
         return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
 
