@@ -14,7 +14,11 @@ class HeaderAPIView(APIView):
     parser_classes = (MultiPartParser, FormParser)
     
     def get(self, request):
-        headers = Header.objects.all()
+        customer_id = request.query_params.get('customer_id')
+        if customer_id == -1:
+            headers = Header.objects.all()
+        else:    
+            headers = Header.objects.filter(user_id=customer_id)
         serializer = HeaderSerializer(headers, many=True)
         return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
 
@@ -63,7 +67,11 @@ class FooterAPIView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request):
-        footers = Footer.objects.all()
+        customer_id = request.query_params.get('customer_id')
+        if customer_id == -1:
+            footers = Header.objects.all()
+        else:    
+            footers = Header.objects.filter(user_id=customer_id)
         serializer = FooterSerializer(footers, many=True)
         return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
 
