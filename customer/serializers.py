@@ -1,22 +1,27 @@
 from rest_framework import serializers
-from .models import Client, Children, FacialPictures
+from .models import Client, Children, ClientFacialPictures, ChildFacialPictures
 from rest_framework import serializers
 
-class PhotoSerializer(serializers.ModelSerializer):
+class ClientPhotoSerializer(serializers.ModelSerializer):
     class Meta:
-        model = FacialPictures
-        fields = ('img_url', 'side_key')
+        model = ClientFacialPictures
+        fields = ('img_url', 'side_key', 'client')
+
+class ChildrenPhotoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChildFacialPictures
+        fields = ('img_url', 'side_key', 'child')
 
 class ChildrenSerializer(serializers.ModelSerializer):
     photos = serializers.SerializerMethodField()
 
     class Meta:
         model = Children
-        fields = ['id', 'client_id', 'children_name', 'date', 'photos']
+        fields = ['id', 'client', 'children_name', 'date', 'photos']
 
     def get_photos(self, obj):
-        photos = FacialPictures.objects.filter(client_id=obj.id, face_type=1)
-        return PhotoSerializer(photos, many=True).data
+        photos = ChildFacialPictures.objects.filter(child_id=obj.id, face_type=1)
+        return ChildrenPhotoSerializer(photos, many=True).data
 
 
 class ClientSerializer(serializers.ModelSerializer):
@@ -32,8 +37,8 @@ class ClientSerializer(serializers.ModelSerializer):
         return ChildrenSerializer(children, many=True).data
 
     def get_photos(self, obj):
-        photos = FacialPictures.objects.filter(client_id=obj.id, face_type=0)
-        return PhotoSerializer(photos, many=True).data
+        photos = ClientFacialPictures.objects.filter(client_id=obj.id, face_type=0)
+        return ClientPhotoSerializer(photos, many=True).data
 
 
 class ClientDetailSerializer(serializers.ModelSerializer):

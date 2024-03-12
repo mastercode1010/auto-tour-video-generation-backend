@@ -24,13 +24,24 @@ class Children(models.Model):
     class Meta:
         db_table = 'children_tbl'
 
-class FacialPictures(models.Model):
+class ClientFacialPictures(models.Model):
     SIDE_CHOICES = [(1, 'Front 1'), (2, 'Front 2'), (3, 'Left'), (4, 'Right')]
     side_key = models.IntegerField()
     img_url = models.ImageField(upload_to='facial_pictures/')
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
-    face_type = models.IntegerField()
+    date = models.DateTimeField(auto_now=True)
+    face_type = models.IntegerField(default = 0)
+
+    class Meta:
+        db_table = 'client_facial_pictures_tbl'
+
+class ChildFacialPictures(models.Model):
+    SIDE_CHOICES = [(1, 'Front 1'), (2, 'Front 2'), (3, 'Left'), (4, 'Right')]
+    side_key = models.IntegerField()
+    img_url = models.ImageField(upload_to='facial_pictures/')
+    child = models.ForeignKey(Children, on_delete=models.CASCADE)
+    face_type = models.IntegerField(default = 1)
     date = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'facial_pictures_tbl'
+        db_table = 'children_facial_pictures_tbl'

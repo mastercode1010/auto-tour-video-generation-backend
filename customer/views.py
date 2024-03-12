@@ -11,10 +11,12 @@ from .serializers import (
     ClientSerializer, 
     ChildrenSerializer,
     ClientDetailSerializer,
-    ClientUpdateSerializer 
+    ClientUpdateSerializer, 
+    ClientPhotoSerializer,
+    ChildrenPhotoSerializer
     # FacialPictureRegistrationSerializer,
 )
-from .models import Client, FacialPictures
+from .models import Client, ClientFacialPictures, ChildFacialPictures, Children
 from user.permissions import IsCustomer, IsAdmin, IsAdminOrCustomer
 from rest_framework import status
 from rest_framework.generics import ListAPIView
@@ -30,21 +32,28 @@ class ClientRegistrationAPIView(APIView):
     
     def post(self, request):
         data = request.data
+        print(data)
         client_serializer = ClientSerializer(data=data)
         if client_serializer.is_valid():
             client = client_serializer.save()
-            # Assuming files are sent as part of the request
-            files = {
-                'front_1': data.get('front_1_file'),
-                'front_2': data.get('front_2_file'),
-                'left': data.get('left_file'),
-                'right': data.get('right_file')
-            }
-            for index, (key, file) in enumerate(files.items(), start=1):
-                FacialPictures.objects.create(client_id=client.id, img_url=file, side_key=index, face_type=0)
-            return JsonResponse({"status": True, "data": client_serializer.data})
+            index = 0
+            for key in ['front_1_file', 'front_2_file', 'left_file', 'right_file']:
+                image_data = {
+                    'client': client.pk,
+                    'img_url': request.FILES.get(key),
+                    'side_key': index
+                }
+                index = index + 1
+                image_serializer = ClientPhotoSerializer(data=image_data)
+                if image_serializer.is_valid():
+                    image_serializer.save()
+                else:
+                    msg = key + " mustn't be empty."
+                    return Response({'status': False, 'data': msg}, status=400)
+
+            return Response({'status': 'success', 'data': client_serializer.data}, status=200)
         else:
-            return JsonResponse({"status": False, "errors": client_serializer.errors}, status=400)
+            return Response(client_serializer.errors, status=400)
         
     def get(self, request):
         customer_id = request.query_params.get('customer_id')
@@ -60,43 +69,46 @@ class ChildrenRegistrationAPIView(APIView):
 
     parser_classes = (MultiPartParser, FormParser)
     
-    def post(self, request):
-        children_serializer = ChildrenSerializer(data=request.data)
+    def post(self, request, *args, **kwargs):
+        client_id = request.data.get('client_id')
+        client = get_object_or_404(Client, pk=client_id)
+        
+        children_data = {
+            'client': client.pk,
+            'children_name': request.data.get('children_name')
+        }
+        children_serializer = ChildrenSerializer(data=children_data)
+        # print(children_serializer.is_valid())
         if children_serializer.is_valid():
             child = children_serializer.save()
-            
-            files = {
-                'front_1_file': request.FILES.get('front_1_file'),
-                'front_2_file': request.FILES.get('front_2_file'),
-                'left_file': request.FILES.get('left_file'),
-                'right_file': request.FILES.get('right_file'),
-            }
-            side_keys = [1, 2, 3, 4]
-            
-            for file_key, side_key in zip(files.keys(), side_keys):
-                if files[file_key]:
-                    FacialPictures.objects.create(
-                        client_id=child.id,  # Assuming this refers correctly to the child id for face_type = 1
-                        img_url=files[file_key],
-                        side_key=side_key,
-                        face_type=1,  # As specified, always 1 for this API
-                        date=child.date  # Using the date from the child object
-                    )
-                    
-            return JsonResponse({'status': 'success', 'message': 'Child and photos added successfully'}, status=status.HTTP_201_CREATED)
+            index = 0
+            for key in ['front_1_file', 'front_2_file', 'left_file', 'right_file']:
+                print(child.id)
+                image_data = {
+                    'child': child.pk,
+                    'img_url': request.FILES.get(key),
+                    'side_key': index
+                }
+                index = index + 1
+                image_serializer = ChildrenPhotoSerializer(data=image_data)
+                if image_serializer.is_valid():
+                    image_serializer.save()
+                else:
+                    msg = key + " mustn't be empty."
+                    return Response({'status': False, 'data': msg}, status=400)
+
+            return Response({'status': 'success', 'data': children_serializer.data}, status=200)
         else:
-            return JsonResponse({'status': 'error', 'errors': children_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(children_serializer.errors, status=400)
         
 class GetClientByIdAPIView(APIView):
     permission_classes = [IsAdminOrCustomer]  # Or adjust as per your security requirements
 
     def get(self, request, pk, format=None):
-        try:
-            client = Client.objects.get(pk=pk)
-            serializer = ClientDetailSerializer(client)
-            return Response({'status': True, 'data': serializer.data})
-        except Client.DoesNotExist:
-            return Response({'status': False})
+        client = get_object_or_404(Client, pk=pk)
+        client_array = [client]
+        client_serializer = ClientSerializer(client_array, many=True)
+        return Response({'status': True, 'data': client_serializer.data[0]})
     
 class ClientDeleteAPIView(APIView):
     
@@ -128,5 +140,8 @@ class ClientUpdateAPIView(APIView):
         serializer = ClientUpdateSerializer(user, data=userdata, partial=True)  # Allow partial update
         if serializer.is_valid():
             serializer.save()
-            return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            updated_client = [Client.objects.get(id=client_id)]
+            client_serializer = ClientSerializer(updated_client, many=True)
+            return Response({'status': True, 'data': client_serializer.data[0]})
+        else:
+            return Response({'status': False, 'error': serializer.error}, status=400)
