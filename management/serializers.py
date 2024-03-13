@@ -4,7 +4,7 @@ from .models import Header, Footer
 class HeaderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Header
-        fields = ['id', 'user', 'video_path', 'created_at', 'updated_at', 'thumbnail']
+        fields = ['id', 'video_path', 'created_at', 'updated_at', 'thumbnail']
         read_only_fields = ['thumbnail']  # Make 'thumbnail' field read-only
 
     def create(self, validated_data):
@@ -23,7 +23,7 @@ class HeaderSerializer(serializers.ModelSerializer):
 class FooterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Footer
-        fields = ['id', 'user', 'video_path', 'created_at', 'updated_at', 'thumbnail']
+        fields = ['id', 'video_path', 'created_at', 'updated_at', 'thumbnail']
         read_only_fields = ['thumbnail']  # Make 'thumbnail' field read-only
 
     def create(self, validated_data):
