@@ -4,7 +4,7 @@ from rest_framework import status
 from .models import Header, Footer
 from .serializers import HeaderSerializer, FooterSerializer
 from rest_framework.permissions import IsAuthenticated
-from user.permissions import IsAdmin, IsCustomer, IsAdminOrCustomer
+from user.permissions import IsAdmin, IsCustomer, IsAdminOrCustomer, IsOwnerOrAdmin, IsUserOrAdmin
 from django.core.files.storage import default_storage
 from rest_framework.parsers import MultiPartParser, FormParser
 
@@ -13,12 +13,14 @@ class HeaderAPIView(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = (MultiPartParser, FormParser)
     
+    def get_queryset(self):
+        # print(self.request.user)
+        if self.request.user.user_type == 1:
+            return Header.objects.all()
+        return Header.objects.filter(user=self.request.user)
+    
     def get(self, request):
-        customer_id = request.query_params.get('customer_id')
-        if customer_id == '-1':
-            headers = Header.objects.all()
-        else:    
-            headers = Header.objects.filter(user_id=customer_id)
+        headers = self.get_queryset()
         serializer = HeaderSerializer(headers, many=True)
         return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
 
@@ -30,7 +32,7 @@ class HeaderAddAPIView(APIView):
     def post(self, request):
         serializer = HeaderSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(user=request.user)
             return Response({"status": True, "data": serializer.data}, status=status.HTTP_201_CREATED)
         return Response({"status": False, "data": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -45,7 +47,7 @@ class HeaderDeleteAPIView(APIView):
             return Response({"status": False, "data": {"msg": "Header ID is required."}}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            header = Header.objects.get(pk=header_id)
+            header = Header.objects.get(pk=header_id, user=request.user)
             # Delete associated video file
             if header.video_path:
                 if default_storage.exists(header.video_path.name):
@@ -66,14 +68,13 @@ class FooterAPIView(APIView):
     parser_classes = (MultiPartParser, FormParser)
     permission_classes = [IsAuthenticated]
     
+    def get_queryset(self):
+        if self.request.user.user_type == 1:
+            return Footer.objects.all()
+        return Footer.objects.filter(user=self.request.user)
+    
     def get(self, request):
-        customer_id = request.query_params.get('customer_id')
-        print(customer_id)
-        if customer_id == '-1':
-            footers = Footer.objects.all()
-        else:    
-            footers = Footer.objects.filter(user_id=customer_id)
-            # print(footers)
+        footers = self.get_queryset()
         serializer = FooterSerializer(footers, many=True)
         return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
 
@@ -85,7 +86,7 @@ class FooterAddAPIView(APIView):
     def post(self, request):
         serializer = FooterSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(user=request.user)
             return Response({"status": True, "data": serializer.data}, status=status.HTTP_201_CREATED)
         return Response({"status": False, "data": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -100,7 +101,7 @@ class FooterDeleteAPIView(APIView):
             return Response({"status": False, "data": {"msg": "Footer ID is required."}}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            footer = Footer.objects.get(pk=footer_id)
+            footer = Footer.objects.get(pk=footer_id, user=request.user)
             # Delete associated video file
             if footer.video_path:
                 if default_storage.exists(footer.video_path.name):
