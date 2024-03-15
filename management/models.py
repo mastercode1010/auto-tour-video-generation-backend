@@ -12,12 +12,23 @@ os.environ["TMPDIR"] = "../media/thumbnailtemp"
 
 class Camera(models.Model):
     camera_name = models.CharField(max_length=255)
-    camera_ip = models.CharField(max_length=255)
+    camera_seq_number = models.IntegerField()
+    camera_ip = models.CharField(max_length=255, unique = True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    camera_type = models.CharField(max_length=255)
     class Meta:
         db_table = 'camera_tbl'
-    
+        
+class CameraVoice(models.Model):
+    customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete = models.CASCADE)
+    camera = models.ForeignKey(Camera, on_delete = models.CASCADE)
+    wait_for_sec = models.FloatField()
+    enter_or_exit_code = models.BooleanField()
+    text = models.TextField()
+    date = models.DateTimeField(auto_now = True)
+    class Meta:
+        db_table = 'camera_voice_tbl'
 
 class Header(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

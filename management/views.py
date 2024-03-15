@@ -1,12 +1,16 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Header, Footer
-from .serializers import HeaderSerializer, FooterSerializer
+from .models import Header, Footer, Camera, CameraVoice
+from .serializers import HeaderSerializer, FooterSerializer, CameraVoiceSerializer
 from rest_framework.permissions import IsAuthenticated
 from user.permissions import IsAdmin, IsCustomer, IsAdminOrCustomer, IsOwnerOrAdmin, IsUserOrAdmin
 from django.core.files.storage import default_storage
 from rest_framework.parsers import MultiPartParser, FormParser
+from django.shortcuts import get_object_or_404
+from django.http import Http404
+from django.http import JsonResponse
+from user.models import User
 
 class HeaderAPIView(APIView):
     
@@ -112,7 +116,234 @@ class FooterDeleteAPIView(APIView):
                     default_storage.delete(footer.thumbnail.name)
             footer.delete()
             return Response({"status": True}, status=status.HTTP_200_OK)
-        except Header.DoesNotExist:
+        except Footer.DoesNotExist:
             return Response({"status": False, "data": {"msg": "Footers not found."}}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"status": False, "data": {"msg": str(e)}}, status=status.HTTP_400_BAD_REQUEST)
+        
+class CameraVoiceAPIView(APIView):
+    
+    permission_classes = [IsAdminOrCustomer]
+    
+    def get(self, request, *args, **kwargs):
+        cameravoiceid = request.query_params.get('id')
+        try:
+            cameravoice = CameraVoice.objects.get(pk = cameravoiceid)
+            serializer = CameraVoiceSerializer(cameravoice)
+            camera_id = serializer.data.get('camera_id')
+            cameradata = Camera.objects.get(pk = camera_id)
+            customer_id = serializer.data.get('customer_id')
+            customer = User.objects.get(pk = customer_id)
+            data = {
+                    "camera_voice_data": {
+                        "id": serializer.data.get('id'), 
+                        "customer_data": {
+                            "id": customer.pk,
+                            "username": customer.username          
+                        },
+                        "camera_data": {
+                            "id": cameradata.pk,
+                            "camera_seq_number": cameradata.camera_seq_number,
+                            "camera_name" : cameradata.camera_name,
+                            "camera_type" : cameradata.camera_type,
+                        },
+                        "wait_for_sec": serializer.data.get('wait_for_sec'),
+                        "enter_or_exit_code": serializer.data.get('enter_or_exit_code'),
+                        "text": serializer.data.get('text'),
+                        "date": serializer.data.get('date')
+                    }
+                }
+            print(data)
+            return Response({"status": True, "data": data}, status=status.HTTP_200_OK)
+        except CameraVoice.DoesNotExist:
+            return Response({"status": False, "data": {"msg": "CameraVoice data doesn't exist."}})
+    
+    def post(self, request, *args, **kwargs):
+        camera_id = request.data.get('camera_id')
+        customer = request.user
+        print(request.data.get('wait_for_sec'))
+        try: 
+            cameradata = Camera.objects.get(pk = camera_id)
+            data = {
+                'customer': customer.pk,
+                'camera': cameradata.pk,
+                'wait_for_sec': request.data.get('wait_for_sec'),
+                'enter_or_exit_code': request.data.get('enter_or_exit_code'),
+                'text': request.data.get('text')
+            }
+            serializer = CameraVoiceSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                data = {
+                    "camera_voice_data": {
+                            "id": serializer.data.get('id'), 
+                            "customer_data": {
+                                "id": customer.pk,
+                                "username": customer.username          
+                            },
+                            "camera_data": {
+                                "id": cameradata.pk,
+                                "camera_seq_number": cameradata.camera_seq_number,
+                                "camera_name" : cameradata.camera_name,
+                                "camera_type" : cameradata.camera_type,
+                            },
+                            "wait_for_sec": serializer.data.get('wait_for_sec'),
+                            "enter_or_exit_code": serializer.data.get('enter_or_exit_code'),
+                            "text": serializer.data.get('text'),
+                            "date": serializer.data.get('date')
+                        }
+                    }
+                return Response({"status": True, "data": data})
+            else:
+                return Response({"status": False, "data": serializer.errors})
+        except Camera.DoesNotExist:
+            return Response({"status": False, "data": {"msg": "Camera doesn't exist."}}, status=status.HTTP_404_NOT_FOUND)
+        
+class CameraVoiceByCameraIdAPIView(APIView):
+    
+    permission_classes = [IsAdminOrCustomer]
+    
+    def get(self, request, *args, **kwargs):
+        customer = request.user
+        camera_id = request.query_params.get('camera_id')
+        try:
+            camera = Camera.objects.get(pk = camera_id)
+            CameraVoiceData = CameraVoice.objects.filter(camera = camera, customer = customer)
+            CameraVoice_Serializer = CameraVoiceSerializer(CameraVoiceData, many = True)
+            response_data = CameraVoice_Serializer.data
+            customized_response = []
+            for item in response_data:
+                customer = User.objects.get(pk = item['customer_id'])
+                cameradata = Camera.objects.get(pk = item['camera_id'])
+                data = {
+                        "camera_voice_data": {
+                            "id": item['id'], 
+                            "customer_data": {
+                                "id": customer.pk,
+                                "username": customer.username          
+                            },
+                            "camera_data": {
+                                "id": cameradata.pk,
+                                "camera_seq_number": cameradata.camera_seq_number,
+                                "camera_name" : cameradata.camera_name,
+                                "camera_type" : cameradata.camera_type,
+                            },
+                            "wait_for_sec": item['wait_for_sec'],
+                            "enter_or_exit_code": item['enter_or_exit_code'],
+                            "text": item['text'],
+                            "date": item['date']
+                        }
+                    }
+                customized_response.append(data)
+            return Response({"status": True, "data": customized_response})
+        except Camera.DoesNotExist:
+            return Response({"status": False, "data": {"msg": "Camera Doesn't Exist."}})
+        
+class GetAllCameraVoiceAPIView(APIView):
+    
+    permission_classes = [IsAdminOrCustomer]
+    
+    def get(self, request, *args, **kwargs):
+        customer = request.user
+        if customer.user_type == 2:
+            CameraVoiceData = CameraVoice.objects.filter(customer = customer)
+        elif customer.user_type == 1:
+            CameraVoiceData = CameraVoice.objects.all()
+        CameraVoice_Serializer = CameraVoiceSerializer(CameraVoiceData, many = True)
+        response_data = CameraVoice_Serializer.data
+        customized_response = []
+        for item in response_data:
+            customer = User.objects.get(pk = item['customer_id'])
+            cameradata = Camera.objects.get(pk = item['camera_id'])
+            data = {
+                    "camera_voice_data": {
+                        "id": item['id'], 
+                        "customer_data": {
+                            "id": customer.pk,
+                            "username": customer.username          
+                        },
+                        "camera_data": {
+                            "id": cameradata.pk,
+                            "camera_seq_number": cameradata.camera_seq_number,
+                            "camera_name" : cameradata.camera_name,
+                            "camera_type" : cameradata.camera_type,
+                        },
+                        "wait_for_sec": item['wait_for_sec'],
+                        "enter_or_exit_code": item['enter_or_exit_code'],
+                        "text": item['text'],
+                        "date": item['date']
+                    }
+                }
+            customized_response.append(data)
+        return Response({"status": True, "data": customized_response})
+    
+class DeleteCameraVoiceAPIView(APIView):
+    permission_classes = [IsAdminOrCustomer]
+    
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        id = request.data.get('id')
+        if not id:
+            return Response({"status": False, "data": {"msg": "CameraVoice ID is required."}}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            cameravoice = CameraVoice.objects.get(pk=id, customer = user)
+        except CameraVoice.DoesNotExist:
+            return Response({"status": False, "data": {"msg": "CameraVoice Data Doesn't Exist Or Permission Denied to this data."}}, status=status.HTTP_404_NOT_FOUND)
+        
+        cameravoice.delete()
+        return Response({"status": True, "data": {"id": id}})
+    
+class UpdateCameraVoiceAPIView(APIView):
+    
+    permission_classes = [IsAdminOrCustomer]
+    
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        id = request.data.get('id')
+        user = request.user
+        if user.user_type == 1:
+            return Response({"status": False, "data": {"msg": "Admin can't update this data."}}, status=status.HTTP_403_FORBIDDEN)
+        camera_id = request.data.get('camera_id')
+        try:
+            camera = Camera.objects.get(pk = camera_id)
+        except Camera.DoesNotExist:
+            return Response({"status": False, "data": {"msg": "Camera isn't Exist."}}, status=status.HTTP_404_NOT_FOUND)
+        
+        if not id:
+            return Response({"status": False, "data": {"msg": "CameraVoice ID is required."}}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            cameravoice = CameraVoice.objects.get(pk=id, customer = user)
+            data = {
+                'customer': user.pk,
+                'camera': camera.pk,
+                'wait_for_sec': request.data.get('wait_for_sec'),
+                'enter_or_exit_code': request.data.get('enter_or_exit_code'),
+                'text': request.data.get('text')
+            }
+            serializer = CameraVoiceSerializer(cameravoice, data=data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                updated_client = CameraVoice.objects.get(id=id)
+                cameravoice_serializer = CameraVoiceSerializer(updated_client)
+                data = {
+                    "camera_voice_data": {
+                            "id": id, 
+                            "customer_data": {
+                                "id": user.pk,
+                                "username": user.username          
+                            },
+                            "camera_data": {
+                                "id": camera.pk,
+                                "camera_seq_number": camera.camera_seq_number,
+                                "camera_name" : camera.camera_name,
+                                "camera_type" : camera.camera_type,
+                            },
+                            "wait_for_sec": cameravoice_serializer.data.get('wait_for_sec'),
+                            "enter_or_exit_code": cameravoice_serializer.data.get('enter_or_exit_code'),
+                            "text": cameravoice_serializer.data.get('text'),
+                            "date": cameravoice_serializer.data.get('date')
+                        }
+                    }
+                return Response({'status': True, 'data': data})
+        except CameraVoice.DoesNotExist:
+            return Response({"status": False, "data": {"msg": "CameraVoice Data Doesn't Exist Or Permission Denied to this data."}}, status=status.HTTP_404_NOT_FOUND)

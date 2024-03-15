@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Header, Footer
+from .models import Header, Footer, Camera, CameraVoice
 
 class HeaderSerializer(serializers.ModelSerializer):
     class Meta:
@@ -38,3 +38,31 @@ class FooterSerializer(serializers.ModelSerializer):
 
         return instance
 
+class CameraVoiceSerializer(serializers.ModelSerializer):
+    # class Meta:
+    #     model = CameraVoice
+    #     fields = ['id', 'customer', 'camera', 'wait_for_sec', 'enter_or_exit_code', 'text', 'date']
+    camera_id = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = CameraVoice
+        fields = ['id', 'customer', 'customer_id', 'camera', 'camera_id', 'wait_for_sec', 'enter_or_exit_code', 'text', 'date']
+        extra_kwargs = {
+            'camera': {'write_only': True},
+            'customer': {'write_only': True}
+        }
+
+    def get_camera_id(self, obj):
+        return obj.camera.pk
+    def get_customer_id(self, obj):
+        return obj.customer.pk
+    
+    def update(self, instance, validated_data):
+        instance.customer = validated_data.get('customer', instance.customer)
+        instance.camera = validated_data.get('camera', instance.camera)
+        instance.wait_for_sec = validated_data.get('wait_for_sec', instance.wait_for_sec)
+        instance.enter_or_exit_code = validated_data.get('enter_or_exit_code', instance.enter_or_exit_code)
+        instance.text = validated_data.get('text', instance.text)
+        instance.save()
+        return instance
+        
