@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import HeaderAPIView, HeaderAddAPIView, HeaderDeleteAPIView, FooterAddAPIView, FooterAPIView, FooterDeleteAPIView
+from .views import HeaderAPIView, HeaderAddAPIView, HeaderDeleteAPIView, FooterAddAPIView, FooterAPIView, FooterDeleteAPIView, CameraVoiceAPIView, CameraVoiceByCameraIdAPIView, GetAllCameraVoiceAPIView, DeleteCameraVoiceAPIView, UpdateCameraVoiceAPIView
 
 urlpatterns = [
     path('header', HeaderAPIView.as_view(), name='header_api'),
@@ -8,4 +8,10 @@ urlpatterns = [
     path('footer', FooterAPIView.as_view(), name='footer_api'),
     path('footer/add', FooterAddAPIView.as_view(), name='footer_add_api'),
     path('footer/delete', FooterDeleteAPIView.as_view(), name='delete-footer'),
+    path('camera_voice/addCameraVoice', CameraVoiceAPIView.as_view(), name='camera-voice-add'),
+    path('camera_voice/getCameraVoiceByID', CameraVoiceAPIView.as_view(), name='camera-voice-by-id'),
+    path('camera_voice/getCameraVoiceByCameraID', CameraVoiceByCameraIdAPIView.as_view(), name='camera-voice-by-camera-id'),
+    path('camera_voice/getCameraVoice', GetAllCameraVoiceAPIView.as_view(), name='camera-voice-all'),
+    path('camera_voice/deleteCameraVoice', DeleteCameraVoiceAPIView.as_view(), name='camera-voice-all'),
+    path('camera_voice/updateCameraVoice', UpdateCameraVoiceAPIView.as_view(), name='camera-voice-update')
 ]
