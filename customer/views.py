@@ -10,18 +10,15 @@ from rest_framework.permissions import AllowAny
 from .serializers import (
     ClientSerializer, 
     ChildrenSerializer,
-    ClientDetailSerializer,
-    ClientUpdateSerializer, 
-    ClientPhotoSerializer,
-    ChildrenPhotoSerializer
-    # FacialPictureRegistrationSerializer,
+    ClientUpdateSerializer
 )
-from .models import Client, ClientFacialPictures, ChildFacialPictures, Children
+from .models import Client
 from user.permissions import IsCustomer, IsAdmin, IsAdminOrCustomer
 from rest_framework import status
 from rest_framework.generics import ListAPIView
 from django.shortcuts import get_object_or_404
 from rest_framework.parsers import MultiPartParser, FormParser
+from django.http import QueryDict
 
 # Create your views here.
 class ClientRegistrationAPIView(APIView):
@@ -31,33 +28,21 @@ class ClientRegistrationAPIView(APIView):
     
     def post(self, request):
         data = request.data
-        print(data)
-        client_serializer = ClientSerializer(data=data)
+        mutable_data = data.copy()
+        mutable_data['customer'] = request.user.pk
+        print(mutable_data)
+        # data['customer'] = request.user.pk
+        client_serializer = ClientSerializer(data=mutable_data)
         if client_serializer.is_valid():
-            client = client_serializer.save()
-            index = 0
-            for key in ['front_1_file', 'front_2_file', 'left_file', 'right_file']:
-                image_data = {
-                    'client': client.pk,
-                    'img_url': request.FILES.get(key),
-                    'side_key': index
-                }
-                index = index + 1
-                image_serializer = ClientPhotoSerializer(data=image_data)
-                if image_serializer.is_valid():
-                    image_serializer.save()
-                else:
-                    msg = key + " mustn't be empty."
-                    return Response({'status': False, 'data': msg}, status=400)
-
+            client_serializer.save()
             return Response({'status': 'success', 'data': client_serializer.data}, status=200)
         else:
             return Response(client_serializer.errors, status=400)
         
     def get(self, request):
-        customer_id = request.query_params.get('customer_id')
-        if customer_id is not None:
-            clients = Client.objects.filter(customer_id=customer_id)
+        customer = request.user
+        if customer is not None:
+            clients = Client.objects.filter(customer=customer.pk)
             serializer = ClientSerializer(clients, many=True)
             return Response({'status': True, 'data': serializer.data})
         else:
@@ -74,28 +59,13 @@ class ChildrenRegistrationAPIView(APIView):
         
         children_data = {
             'client': client.pk,
-            'children_name': request.data.get('children_name')
+            'children_name': request.data.get('children_name'),
+            'rfid_tag': request.data.get('rfid_tag')
         }
         children_serializer = ChildrenSerializer(data=children_data)
-        # print(children_serializer.is_valid())
         if children_serializer.is_valid():
-            child = children_serializer.save()
-            index = 0
-            for key in ['front_1_file', 'front_2_file', 'left_file', 'right_file']:
-                print(child.id)
-                image_data = {
-                    'child': child.pk,
-                    'img_url': request.FILES.get(key),
-                    'side_key': index
-                }
-                index = index + 1
-                image_serializer = ChildrenPhotoSerializer(data=image_data)
-                if image_serializer.is_valid():
-                    image_serializer.save()
-                else:
-                    msg = key + " mustn't be empty."
-                    return Response({'status': False, 'data': msg}, status=400)
-
+            children_serializer.save()
+            
             return Response({'status': 'success', 'data': children_serializer.data}, status=200)
         else:
             return Response(children_serializer.errors, status=400)

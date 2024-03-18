@@ -12,6 +12,7 @@ os.environ["TMPDIR"] = "../media/thumbnailtemp"
 
 class Camera(models.Model):
     camera_name = models.CharField(max_length=255)
+    customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete = models.CASCADE)
     camera_seq_number = models.IntegerField()
     camera_ip = models.CharField(max_length=255, unique = True)
     created_at = models.DateTimeField(auto_now_add=True)

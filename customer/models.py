@@ -1,8 +1,9 @@
 from django.db import models
+from django.conf import settings
 
 # Create your models here.
 class Client(models.Model):
-    customer_id = models.IntegerField()
+    customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete = models.CASCADE)
     client_name = models.CharField(max_length=255)
     client_email = models.EmailField()
     get_same_video = models.BooleanField(default=False)
@@ -11,6 +12,9 @@ class Client(models.Model):
     be_shown_potential = models.BooleanField(default=False)
     be_shown_public_business = models.BooleanField(default=False)
     be_shown_social_media = models.BooleanField(default=False)
+    paid_status = models.BooleanField(default = False)
+    rfid_tag = models.CharField(max_length = 255)
+    tour_status = models.BooleanField(default = False)
     date = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -19,29 +23,8 @@ class Client(models.Model):
 class Children(models.Model):
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     children_name = models.CharField(max_length=255)
+    rfid_tag = models.CharField(max_length = 255)
     date = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'children_tbl'
-
-class ClientFacialPictures(models.Model):
-    SIDE_CHOICES = [(1, 'Front 1'), (2, 'Front 2'), (3, 'Left'), (4, 'Right')]
-    side_key = models.IntegerField()
-    img_url = models.ImageField(upload_to='facial_pictures/')
-    client = models.ForeignKey(Client, on_delete=models.CASCADE)
-    date = models.DateTimeField(auto_now=True)
-    face_type = models.IntegerField(default = 0)
-
-    class Meta:
-        db_table = 'client_facial_pictures_tbl'
-
-class ChildFacialPictures(models.Model):
-    SIDE_CHOICES = [(1, 'Front 1'), (2, 'Front 2'), (3, 'Left'), (4, 'Right')]
-    side_key = models.IntegerField()
-    img_url = models.ImageField(upload_to='facial_pictures/')
-    child = models.ForeignKey(Children, on_delete=models.CASCADE)
-    face_type = models.IntegerField(default = 1)
-    date = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = 'children_facial_pictures_tbl'

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Header, Footer, Camera, CameraVoice
+from .models import Header, Footer, CameraVoice
 
 class HeaderSerializer(serializers.ModelSerializer):
     class Meta:
@@ -39,9 +39,7 @@ class FooterSerializer(serializers.ModelSerializer):
         return instance
 
 class CameraVoiceSerializer(serializers.ModelSerializer):
-    # class Meta:
-    #     model = CameraVoice
-    #     fields = ['id', 'customer', 'camera', 'wait_for_sec', 'enter_or_exit_code', 'text', 'date']
+    
     camera_id = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
