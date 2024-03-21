@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import HeaderAPIView, HeaderAddAPIView, HeaderDeleteAPIView, FooterAddAPIView, FooterAPIView, FooterDeleteAPIView, CameraVoiceAPIView, CameraVoiceByCameraIdAPIView, GetAllCameraVoiceAPIView, DeleteCameraVoiceAPIView, UpdateCameraVoiceAPIView
+from .views import HeaderAPIView, HeaderAddAPIView, HeaderDeleteAPIView, FooterAddAPIView, FooterAPIView, FooterDeleteAPIView, CameraVoiceAPIView, CameraVoiceByCameraIdAPIView, GetAllCameraVoiceAPIView, DeleteCameraVoiceAPIView, UpdateCameraVoiceAPIView, CameraAPIView
 
 urlpatterns = [
     path('header', HeaderAPIView.as_view(), name='header_api'),
@@ -13,5 +13,6 @@ urlpatterns = [
     path('camera_voice/getCameraVoiceByCameraID', CameraVoiceByCameraIdAPIView.as_view(), name='camera-voice-by-camera-id'),
     path('camera_voice/getCameraVoice', GetAllCameraVoiceAPIView.as_view(), name='camera-voice-all'),
     path('camera_voice/deleteCameraVoice', DeleteCameraVoiceAPIView.as_view(), name='camera-voice-all'),
-    path('camera_voice/updateCameraVoice', UpdateCameraVoiceAPIView.as_view(), name='camera-voice-update')
+    path('camera_voice/updateCameraVoice', UpdateCameraVoiceAPIView.as_view(), name='camera-voice-update'),
+    path('camera/getall', CameraAPIView.as_view(), name='camera-voice-update')
 ]

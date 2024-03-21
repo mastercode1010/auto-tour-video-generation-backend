@@ -1,5 +1,11 @@
 from rest_framework import serializers
-from .models import Header, Footer, CameraVoice
+from .models import Header, Footer, CameraVoice, Camera
+
+class CameraSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Camera
+        fields = ['id', 'camera_name', 'camera_ip', 'camera_type', 'camera_seq_number', 'created_at', 'updated_at']
 
 class HeaderSerializer(serializers.ModelSerializer):
     class Meta:

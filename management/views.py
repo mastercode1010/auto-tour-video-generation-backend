@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Header, Footer, Camera, CameraVoice
-from .serializers import HeaderSerializer, FooterSerializer, CameraVoiceSerializer
+from .serializers import HeaderSerializer, FooterSerializer, CameraVoiceSerializer, CameraSerializer
 from rest_framework.permissions import IsAuthenticated
 from user.permissions import IsAdmin, IsCustomer, IsAdminOrCustomer, IsOwnerOrAdmin, IsUserOrAdmin
 from django.core.files.storage import default_storage
@@ -11,6 +11,18 @@ from django.shortcuts import get_object_or_404
 from django.http import Http404
 from django.http import JsonResponse
 from user.models import User
+
+class CameraAPIView(APIView):
+    permission_classes = [IsCustomer]
+    
+    def get(self, request):
+        customer = request.user
+        if customer is not None:
+            clients = Camera.objects.filter(customer=customer.pk)
+            serializer = CameraSerializer(clients, many=True)
+            return Response({'status': True, 'data': serializer.data})
+        else:
+            return Response({'status': False, 'error': 'Customer ID is required'}, status=400)
 
 class HeaderAPIView(APIView):
     
