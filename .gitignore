@@ -16,3 +16,8 @@ customer/__pycache__/serializers.cpython-310.pyc
 customer/__pycache__/apps.cpython-310.pyc
 customer/__pycache__/views.cpython-310.pyc
 otisenv
+/customer/migrations
+/customer/__pycache__
+/management/migrations
+/user/migrations
+/user/__pycache__

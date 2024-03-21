@@ -103,10 +103,9 @@ class ClientUpdateAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         client_id = request.data['client_id']
-        user = Client.objects.get(id = client_id)
+        client = Client.objects.get(id = client_id)
         userdata = request.data
-        # print(userdata)
-        serializer = ClientUpdateSerializer(user, data=userdata, partial=True)  # Allow partial update
+        serializer = ClientUpdateSerializer(client, data=userdata, partial=True)  # Allow partial update
         if serializer.is_valid():
             serializer.save()
             updated_client = [Client.objects.get(id=client_id)]

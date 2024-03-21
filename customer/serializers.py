@@ -29,7 +29,7 @@ class ClientDetailSerializer(serializers.ModelSerializer):
 class ClientUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Client
-        fields = ('id', 'client_name', 'client_email', 'get_same_video', 'appears_in_others_video', 'voice_can_be_recorded', 'be_shown_potential', 'be_shown_public_business', 'be_shown_social_media', 'date')
+        fields = ('id', 'client_name', 'client_email', 'get_same_video', 'appears_in_others_video', 'voice_can_be_recorded', 'rfid_tag', 'be_shown_potential', 'be_shown_public_business', 'be_shown_social_media', 'date')
 
     def update(self, instance, validated_data):
         instance.client_name = validated_data.get('client_name', instance.client_name)
@@ -39,9 +39,9 @@ class ClientUpdateSerializer(serializers.ModelSerializer):
         instance.voice_can_be_recorded = validated_data.get('voice_can_be_recorded', instance.voice_can_be_recorded)
         instance.be_shown_potential = validated_data.get('be_shown_potential', instance.be_shown_potential)
         instance.be_shown_public_business = validated_data.get('be_shown_public_business', instance.be_shown_public_business)
-        instance.be_shown_social_media = validated_data.get('be_shown_social_media', instance.be_shown_social_media),
-        instance.rfid_tag = validated_data.get('rfid_tag', instance.rfid_tag),
-        instance.tour_status = validated_data.get('tour_status', instance.tour_status),
+        instance.be_shown_social_media = validated_data.get('be_shown_social_media', instance.be_shown_social_media)
+        instance.rfid_tag = validated_data.get('rfid_tag', instance.rfid_tag)
+        instance.tour_status = validated_data.get('tour_status', instance.tour_status)
         instance.paid_status = validated_data.get('paid_status', instance.paid_status)
         instance.save()
         return instance
