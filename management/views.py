@@ -13,16 +13,16 @@ from django.http import JsonResponse
 from user.models import User
 
 class CameraAPIView(APIView):
-    permission_classes = [IsCustomer]
+    permission_classes = [IsAdminOrCustomer]
     
     def get(self, request):
         customer = request.user
         if customer is not None:
-            clients = Camera.objects.filter(customer=customer.pk)
-            serializer = CameraSerializer(clients, many=True)
+            cameras = Camera.objects.filter(customer=customer.pk)
+            serializer = CameraSerializer(cameras, many=True)
             return Response({'status': True, 'data': serializer.data})
         else:
-            return Response({'status': False, 'error': 'Customer ID is required'}, status=400)
+            return Response({'status': False, 'error': 'You have to login in this site.'}, status=400)
 
 class HeaderAPIView(APIView):
     
