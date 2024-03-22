@@ -220,7 +220,10 @@ class CameraVoiceByCameraIdAPIView(APIView):
         camera_id = request.query_params.get('camera_id')
         try:
             camera = Camera.objects.get(pk = camera_id)
-            CameraVoiceData = CameraVoice.objects.filter(camera = camera, customer = customer)
+            if customer.usertype == 1:
+                CameraVoiceData = CameraVoice.objects.filter(camera = camera)
+            elif customer.usertype == 2:    
+                CameraVoiceData = CameraVoice.objects.filter(camera = camera, customer = customer)
             CameraVoice_Serializer = CameraVoiceSerializer(CameraVoiceData, many = True)
             response_data = CameraVoice_Serializer.data
             customized_response = []
