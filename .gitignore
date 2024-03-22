@@ -21,3 +21,4 @@ otisenv
 /management/migrations
 /user/migrations
 /user/__pycache__
+/otisproject/__pycache__

@@ -75,7 +75,11 @@ class HeaderDeleteAPIView(APIView):
             header.delete()
             return Response({"status": True}, status=status.HTTP_200_OK)
         except Header.DoesNotExist:
-            return Response({"status": False, "data": {"msg": "Header not found."}}, status=status.HTTP_404_NOT_FOUND)
+            try:
+                header_existence = Header.objects.get(pk = header_id)
+                return Response({"status": False, "data": {"msg": "You don't have permission to delete this data."}}, status=status.HTTP_403_FORBIDDEN)
+            except Header.DoesNotExist:
+                return Response({"status": False, "data": {"msg": "Header not found."}}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"status": False, "data": {"msg": str(e)}}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -129,7 +133,11 @@ class FooterDeleteAPIView(APIView):
             footer.delete()
             return Response({"status": True}, status=status.HTTP_200_OK)
         except Footer.DoesNotExist:
-            return Response({"status": False, "data": {"msg": "Footers not found."}}, status=status.HTTP_404_NOT_FOUND)
+            try:
+                footer_existence = Footer.objects.get(pk = footer_id)
+                return Response({"status": False, "data": {"msg": "You don't have permission to delete this data."}}, status=status.HTTP_403_FORBIDDEN)
+            except Footer.DoesNotExist:
+                return Response({"status": False, "data": {"msg": "Footers not found."}}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"status": False, "data": {"msg": str(e)}}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -303,7 +311,11 @@ class DeleteCameraVoiceAPIView(APIView):
         try:
             cameravoice = CameraVoice.objects.get(pk=id, customer = user)
         except CameraVoice.DoesNotExist:
-            return Response({"status": False, "data": {"msg": "CameraVoice Data Doesn't Exist Or Permission Denied to this data."}}, status=status.HTTP_404_NOT_FOUND)
+            try:
+                cameravoice_existence = CameraVoice.objects.get(pk=id)
+                return Response({"status": False, "data": {"msg": "You don't have permission to delete this data."}}, status=status.HTTP_403_FORBIDDEN)
+            except CameraVoice.DoesNotExist:
+                return Response({"status": False, "data": {"msg": "CameraVoice Data Doesn't Exist"}}, status=status.HTTP_404_NOT_FOUND)
         
         cameravoice.delete()
         return Response({"status": True, "data": {"id": id}})
@@ -316,8 +328,6 @@ class UpdateCameraVoiceAPIView(APIView):
         user = request.user
         id = request.data.get('id')
         user = request.user
-        if user.user_type == 1:
-            return Response({"status": False, "data": {"msg": "Admin can't update this data."}}, status=status.HTTP_403_FORBIDDEN)
         camera_id = request.data.get('camera_id')
         try:
             camera = Camera.objects.get(pk = camera_id)
@@ -361,4 +371,8 @@ class UpdateCameraVoiceAPIView(APIView):
                     }
                 return Response({'status': True, 'data': data})
         except CameraVoice.DoesNotExist:
-            return Response({"status": False, "data": {"msg": "CameraVoice Data Doesn't Exist Or Permission Denied to this data."}}, status=status.HTTP_404_NOT_FOUND)
+            try:
+                cameravoice_existence = CameraVoice.objects.get(pk=id)
+                return Response({"status": False, "data": {"msg": "You don't have permission to update this data."}}, status=status.HTTP_403_FORBIDDEN)
+            except CameraVoice.DoesNotExist:
+                return Response({"status": False, "data": {"msg": "CameraVoice Data Doesn't Exist."}}, status=status.HTTP_404_NOT_FOUND)

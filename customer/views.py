@@ -22,7 +22,7 @@ from django.http import QueryDict
 
 # Create your views here.
 class ClientRegistrationAPIView(APIView):
-    permission_classes = [IsCustomer]
+    permission_classes = [IsAdminOrCustomer]
 
     parser_classes = (MultiPartParser, FormParser)
     
@@ -42,7 +42,10 @@ class ClientRegistrationAPIView(APIView):
     def get(self, request):
         customer = request.user
         if customer is not None:
-            clients = Client.objects.filter(customer=customer.pk)
+            if customer.user_type == 1:
+                clients = Client.objects.all()
+            elif customer.user_type == 2:
+                clients = Client.objects.filter(customer=customer.pk)
             serializer = ClientSerializer(clients, many=True)
             return Response({'status': True, 'data': serializer.data})
         else:
@@ -81,7 +84,7 @@ class GetClientByIdAPIView(APIView):
     
 class ClientDeleteAPIView(APIView):
     
-    permission_classes = [IsAdminOrCustomer]
+    permission_classes = [IsCustomer]
     
     def post(self, request, *args, **kwargs):
         client_id = request.data.get('client_id')
@@ -99,7 +102,7 @@ class ClientDeleteAPIView(APIView):
             return Response({"status": False, "data": {"msg": str(e)}}, status=status.HTTP_400_BAD_REQUEST)
 
 class ClientUpdateAPIView(APIView):
-    permission_classes = [IsAdminOrCustomer]
+    permission_classes = [IsCustomer]
 
     def post(self, request, *args, **kwargs):
         client_id = request.data['client_id']
