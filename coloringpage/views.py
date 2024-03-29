@@ -17,7 +17,7 @@ class ColoringPageListCreateAPIView(APIView):
         if user.user_type == 1:
             coloring_pages = ColoringPage.objects.all()
         elif user.user_type == 2:
-            coloring_pages = ColoringPage.objects.get(customer = user)
+            coloring_pages = ColoringPage.objects.filter(customer = user)
         serializer = ColoringPageSerializer(coloring_pages, many=True)
         length = serializer.data.__len__()
         data = []
