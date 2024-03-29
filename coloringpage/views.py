@@ -60,16 +60,25 @@ class ColoringPageListCreateAPIView(APIView):
         serializer = ColoringPageSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
-            data = {
-                "id": serializer.data['id'],
-                "customer_id": serializer.data['customer'],
-                "camera_id": serializer.data['camera'],
+            customer = User.objects.get(pk=serializer.data['customer'])
+            camera = Camera.objects.get(pk=serializer.data['camera'])
+            sepdata = {
+                "customer_data": {
+                    "id": customer.id,
+                    "username": customer.username
+                },
+                "camera": {
+                    "id": camera.id,
+                    "camera_seq_number": camera.camera_seq_number,
+                    "camera_name": camera.camera_name,
+                    "camera_type": camera.camera_type
+                },
                 "coloringpage": serializer.data['coloringpage'],
                 "wait_for_sec": serializer.data['wait_for_sec'],
                 "text": serializer.data['text'],
                 "date": serializer.data['date']
             }
-            return Response({'status': True, 'data': data}, status=status.HTTP_201_CREATED)
+            return Response({'status': True, 'data': sepdata}, status=status.HTTP_201_CREATED)
         return Response({'status': True, 'data': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 class ColoringPageDetailAPIView(APIView):
@@ -88,12 +97,27 @@ class ColoringPageDetailAPIView(APIView):
     def get(self, request, pk):
         user = request.user
         page = self.get_object(pk)
-        print(page)
-        print(page.customer)
-        print(user)
         if page.customer == user:
             serializer = ColoringPageSerializer(page)
-            return Response(serializer.data)
+            customer = User.objects.get(pk=serializer.data['customer'])
+            camera = Camera.objects.get(pk=serializer.data['camera'])
+            sepdata = {
+                "customer_data": {
+                    "id": customer.id,
+                    "username": customer.username
+                },
+                "camera": {
+                    "id": camera.id,
+                    "camera_seq_number": camera.camera_seq_number,
+                    "camera_name": camera.camera_name,
+                    "camera_type": camera.camera_type
+                },
+                "coloringpage": serializer.data['coloringpage'],
+                "wait_for_sec": serializer.data['wait_for_sec'],
+                "text": serializer.data['text'],
+                "date": serializer.data['date']
+            }
+            return Response({'status': True, 'data': sepdata}, status=status.HTTP_200_OK)
         else:
             Response({'status': False, 'data': {'msg': "You don't have any permission of this data."}}, status=status.HTTP_403_FORBIDDEN)
 
@@ -111,7 +135,25 @@ class ColoringPageDetailAPIView(APIView):
             serializer = ColoringPageSerializer(instance=page, data=mutabledata)
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data)
+                customer = User.objects.get(pk=serializer.data['customer'])
+                camera = Camera.objects.get(pk=serializer.data['camera'])
+                sepdata = {
+                    "customer_data": {
+                        "id": customer.id,
+                        "username": customer.username
+                    },
+                    "camera": {
+                        "id": camera.id,
+                        "camera_seq_number": camera.camera_seq_number,
+                        "camera_name": camera.camera_name,
+                        "camera_type": camera.camera_type
+                    },
+                    "coloringpage": serializer.data['coloringpage'],
+                    "wait_for_sec": serializer.data['wait_for_sec'],
+                    "text": serializer.data['text'],
+                    "date": serializer.data['date']
+                }
+                return Response({'status': True, 'data': sepdata}, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             Response({'status': False, 'data': {'msg': "You don't have any permission of this data."}}, status=status.HTTP_403_FORBIDDEN)
