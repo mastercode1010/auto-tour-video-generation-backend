@@ -5,6 +5,8 @@ from rest_framework import status
 from .models import ColoringPage
 from .serializers import ColoringPageSerializer
 from user.permissions import IsAdminOrCustomer, IsCustomer
+from management.models import Camera
+from user.models import User
 
 class ColoringPageListCreateAPIView(APIView):
     """
@@ -22,16 +24,26 @@ class ColoringPageListCreateAPIView(APIView):
         length = serializer.data.__len__()
         data = []
         for i in range(length):
+            customer = User.objects.get(pk=serializer.data[i]['customer'])
+            camera = Camera.objects.get(pk=serializer.data[i]['camera'])
             sepdata = {
-                "customer_id": serializer.data[i]['customer'],
-                "camera_id": serializer.data[i]['camera'],
+                "customer_data": {
+                    "id": customer.id,
+                    "username": customer.username
+                },
+                "camera": {
+                    "id": camera.id,
+                    "camera_seq_number": camera.camera_seq_number,
+                    "camera_name": camera.camera_name,
+                    "camera_type": camera.camera_type
+                },
                 "coloringpage": serializer.data[i]['coloringpage'],
                 "wait_for_sec": serializer.data[i]['wait_for_sec'],
                 "text": serializer.data[i]['text']
             }
             data.append(sepdata)
 
-        return Response({'status': True, 'data': serializer.data})
+        return Response({'status': True, 'data': data})
 
     def post(self, request, format=None):
         # pagedata = request.data
