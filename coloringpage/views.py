@@ -35,9 +35,9 @@ class ColoringPageListCreateAPIView(APIView):
 
     def post(self, request, format=None):
         # pagedata = request.data
-
+        user = request.user
         data = {
-                "customer": request.data['customer_id'],
+                "customer": user.pk,
                 "camera": request.data['camera_id'],
                 "coloringpage": request.data['coloringpage'],
                 "wait_for_sec": request.data['wait_for_sec'],
@@ -91,9 +91,8 @@ class ColoringPageDetailAPIView(APIView):
         print(request.data)
         data = request.data
         mutabledata= data.copy()
-        mutabledata['customer'] = mutabledata['customer_id']
+        mutabledata['customer'] = user.pk
         mutabledata['camera'] = mutabledata['camera_id']
-        del mutabledata['customer_id']
         del mutabledata['camera_id']
         if page.customer == user:
             serializer = ColoringPageSerializer(instance=page, data=mutabledata)
