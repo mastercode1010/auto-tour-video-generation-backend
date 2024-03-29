@@ -7,6 +7,7 @@ from .serializers import ColoringPageSerializer
 from user.permissions import IsAdminOrCustomer, IsCustomer
 from management.models import Camera
 from user.models import User
+from django.core.files.storage import default_storage
 
 class ColoringPageListCreateAPIView(APIView):
     """
@@ -177,6 +178,10 @@ class ColoringPageDeleteAPIView(APIView):
         pk = request.data.get('id')
         coloring_page = self.get_object(pk)
         if coloring_page.customer == user:
+            if coloring_page.coloringpage:
+                pageurl = str(coloring_page.coloringpage)
+                if default_storage.exists(pageurl):
+                    default_storage.delete(pageurl)
             coloring_page.delete()
             return Response({"status": True, "data": {"id": pk}}, status=status.HTTP_200_OK)
         else:
