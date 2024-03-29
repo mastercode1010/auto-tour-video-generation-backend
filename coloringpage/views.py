@@ -27,6 +27,7 @@ class ColoringPageListCreateAPIView(APIView):
             customer = User.objects.get(pk=serializer.data[i]['customer'])
             camera = Camera.objects.get(pk=serializer.data[i]['camera'])
             sepdata = {
+                "id": serializer.data[i]['id'],
                 "customer_data": {
                     "id": customer.id,
                     "username": customer.username
@@ -63,6 +64,7 @@ class ColoringPageListCreateAPIView(APIView):
             customer = User.objects.get(pk=serializer.data['customer'])
             camera = Camera.objects.get(pk=serializer.data['camera'])
             sepdata = {
+                "id": serializer.data['id'],
                 "customer_data": {
                     "id": customer.id,
                     "username": customer.username
@@ -102,6 +104,7 @@ class ColoringPageDetailAPIView(APIView):
             customer = User.objects.get(pk=serializer.data['customer'])
             camera = Camera.objects.get(pk=serializer.data['camera'])
             sepdata = {
+                "id": serializer.data['id'],
                 "customer_data": {
                     "id": customer.id,
                     "username": customer.username
@@ -138,6 +141,7 @@ class ColoringPageDetailAPIView(APIView):
                 customer = User.objects.get(pk=serializer.data['customer'])
                 camera = Camera.objects.get(pk=serializer.data['camera'])
                 sepdata = {
+                    "id": serializer.data['id'],
                     "customer_data": {
                         "id": customer.id,
                         "username": customer.username
