@@ -178,6 +178,6 @@ class ColoringPageDeleteAPIView(APIView):
         coloring_page = self.get_object(pk)
         if coloring_page.customer == user:
             coloring_page.delete()
-            return Response({'status': True, 'data': 'Successfully deleted.'}, status=status.HTTP_204_NO_CONTENT)
+            return Response({"status": True, "data": {"id": pk}}, status=status.HTTP_200_OK)
         else:
             Response({'status': False, 'data': {'msg': "You don't have any permission of this data."}}, status=status.HTTP_403_FORBIDDEN)
