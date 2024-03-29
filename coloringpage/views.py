@@ -39,7 +39,8 @@ class ColoringPageListCreateAPIView(APIView):
                 },
                 "coloringpage": serializer.data[i]['coloringpage'],
                 "wait_for_sec": serializer.data[i]['wait_for_sec'],
-                "text": serializer.data[i]['text']
+                "text": serializer.data[i]['text'],
+                "date": serializer.data[i]['date']
             }
             data.append(sepdata)
 
