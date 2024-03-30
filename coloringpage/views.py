@@ -49,7 +49,6 @@ class ColoringPageListCreateAPIView(APIView):
         return Response({'status': True, 'data': data})
 
     def post(self, request, format=None):
-        # pagedata = request.data
         user = request.user
         data = {
                 "customer": user.pk,
@@ -100,41 +99,39 @@ class ColoringPageDetailAPIView(APIView):
     def get(self, request, pk):
         user = request.user
         page = self.get_object(pk)
-        if page.customer == user:
-            serializer = ColoringPageSerializer(page)
-            customer = User.objects.get(pk=serializer.data['customer'])
-            camera = Camera.objects.get(pk=serializer.data['camera'])
-            sepdata = {
-                "id": serializer.data['id'],
-                "customer_data": {
-                    "id": customer.id,
-                    "username": customer.username
-                },
-                "camera": {
-                    "id": camera.id,
-                    "camera_seq_number": camera.camera_seq_number,
-                    "camera_name": camera.camera_name,
-                    "camera_type": camera.camera_type
-                },
-                "coloringpage": serializer.data['coloringpage'],
-                "wait_for_sec": serializer.data['wait_for_sec'],
-                "text": serializer.data['text'],
-                "date": serializer.data['date']
-            }
-            return Response({'status': True, 'data': sepdata}, status=status.HTTP_200_OK)
-        else:
-            Response({'status': False, 'data': {'msg': "You don't have any permission of this data."}}, status=status.HTTP_403_FORBIDDEN)
+        serializer = ColoringPageSerializer(page)
+        customer = User.objects.get(pk=serializer.data['customer'])
+        camera = Camera.objects.get(pk=serializer.data['camera'])
+        sepdata = {
+            "id": serializer.data['id'],
+            "customer_data": {
+                "id": customer.id,
+                "username": customer.username
+            },
+            "camera": {
+                "id": camera.id,
+                "camera_seq_number": camera.camera_seq_number,
+                "camera_name": camera.camera_name,
+                "camera_type": camera.camera_type
+            },
+            "coloringpage": serializer.data['coloringpage'],
+            "wait_for_sec": serializer.data['wait_for_sec'],
+            "text": serializer.data['text'],
+            "date": serializer.data['date']
+        }
+        return Response({'status': True, 'data': sepdata}, status=status.HTTP_200_OK)
 
     def post(self, request, format=None):
         user = request.user
         pk = request.data.get('id')
         page = self.get_object(pk)
-        print(request.data)
         data = request.data
         mutabledata= data.copy()
         mutabledata['customer'] = user.pk
         mutabledata['camera'] = mutabledata['camera_id']
         del mutabledata['camera_id']
+        print(mutabledata)
+        print(page.customer == user)
         if page.customer == user:
             serializer = ColoringPageSerializer(instance=page, data=mutabledata)
             if serializer.is_valid():
@@ -159,9 +156,10 @@ class ColoringPageDetailAPIView(APIView):
                     "date": serializer.data['date']
                 }
                 return Response({'status': True, 'data': sepdata}, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
-            Response({'status': False, 'data': {'msg': "You don't have any permission of this data."}}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'status': False, 'data': {'msg': "You don't have any permission of this data."}}, status=status.HTTP_403_FORBIDDEN)
 
 class ColoringPageDeleteAPIView(APIView):
 
@@ -185,4 +183,4 @@ class ColoringPageDeleteAPIView(APIView):
             coloring_page.delete()
             return Response({"status": True, "data": {"id": pk}}, status=status.HTTP_200_OK)
         else:
-            Response({'status': False, 'data': {'msg': "You don't have any permission of this data."}}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'status': False, 'data': {'msg': "You don't have any permission of this data."}}, status=status.HTTP_403_FORBIDDEN)
