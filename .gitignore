@@ -24,3 +24,5 @@ otisenv
 /otisproject/__pycache__
 coloringpage/__pycache__
 coloringpage/migrations
+emailmanagement/migrations
+emailmanagement/__pycache__

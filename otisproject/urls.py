@@ -22,5 +22,6 @@ urlpatterns = [
     path('api/v1/auth/', include('user.urls')),
     path('api/v1/admin/', include('management.urls')),
     path('api/v1/customer/', include('customer.urls')),
-    path('api/v1/coloringpages/', include('coloringpage.urls'))
+    path('api/v1/coloringpages/', include('coloringpage.urls')),
+    path('api/v1/email/', include('emailmanagement.urls'))
 ]  + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
