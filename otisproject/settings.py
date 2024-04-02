@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'sslserver',
     'corsheaders',
     'customer',
-    'coloringpage'
+    'coloringpage',
+    'emailmanagement'
 ]
 
 MIDDLEWARE = [
