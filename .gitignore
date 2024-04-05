@@ -4,7 +4,6 @@ management/__pycache__/
 management/migrations/
 static/
 media/
-staticfiles/
 headers/
 gmailsender/credentials.json
 gmailsender/token.pickle
