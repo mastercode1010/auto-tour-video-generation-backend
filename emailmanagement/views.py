@@ -125,6 +125,7 @@ class ExitEmailSendDetailAPIView(APIView):
         user = request.user
         pk = request.data.get('id')
         exitdata = self.get_object(pk)
+        print(exitdata)
         data = request.data
         mutabledata= data.copy()
         mutabledata['customer'] = user.pk
