@@ -36,6 +36,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     contact_email = models.EmailField()
     contact_name = models.CharField(max_length=100)
     contact_phone_number = models.CharField(max_length=20)
+    status = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 
