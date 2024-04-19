@@ -100,7 +100,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'otisdb',
-        'USER': 'jerry_123', 
+        'USER': 'jerry_1234', 
         'PASSWORD': 'Korgi123!',
         'HOST': 'localhost',
         'PORT': '3306',
