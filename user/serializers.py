@@ -33,7 +33,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username', 'email', 'phone_number', 'street', 'user_avatar', 'contact_email', 'contact_name', 'contact_phone_number')
+        fields = ('username', 'email', 'phone_number', 'street', 'user_avatar', 'contact_email', 'contact_name', 'contact_phone_number', 'status')
 
     def update(self, instance, validated_data):
         instance.username = validated_data.get('username', instance.username)
@@ -44,13 +44,14 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         instance.contact_email = validated_data.get('contact_email', instance.contact_email)
         instance.contact_name = validated_data.get('contact_name', instance.contact_name)
         instance.contact_phone_number = validated_data.get('contact_phone_number', instance.contact_phone_number)
+        instance.status = validated_data.get('status', instance.status)
         instance.save()
         return instance
 
 class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'phone_number', 'street', 'user_type', 'user_avatar', 'contact_email', 'contact_name', 'contact_phone_number']  # Exclude 'password'
+        fields = ['id', 'username', 'email', 'phone_number', 'street', 'user_type', 'user_avatar', 'contact_email', 'contact_name', 'contact_phone_number', 'status']  # Exclude 'password'
         read_only_fields = fields
 
 class UserDetailSerializer(serializers.ModelSerializer):
@@ -74,6 +75,7 @@ class UserLoginSerializer(serializers.Serializer):
                 'user_id': user.id,
                 'user_type': user.user_type,
                 'username': user.username,
+                'status' : user.status,
             }
         else:
             raise serializers.ValidationError("Invalid email or password")

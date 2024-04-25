@@ -25,7 +25,12 @@ SECRET_KEY = 'django-insecure-!uv7)7w!(d&kzk$b+go0m-0t7ugq*yvv%p*5+w(e^i(urfp0oo
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["localhost","*","127.0.0.1"]
+ALLOWED_HOSTS = ["localhost","*","127.0.0.1", "emmysvideos.com"]
+
+SECURE_SSL_REDIRECT = True
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+
 
 WSGI_APPLICATION = 'otisproject.wsgi.application'
 # STATIC_URL = '/static/'
@@ -68,7 +73,7 @@ ROOT_URLCONF = 'otisproject.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': ['/var/www/vhosts/emmysvideos.com/httpdocs/1880_video_backend/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -95,10 +100,13 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'otisdb',
-        'USER': 'root', 
-        'PASSWORD': '',
+        'USER': 'jerry_1234', 
+        'PASSWORD': 'Korgi123!',
         'HOST': 'localhost',
         'PORT': '3306',
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
     }
 }
 

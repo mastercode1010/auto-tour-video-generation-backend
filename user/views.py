@@ -62,12 +62,15 @@ class UserLoginAPIView(APIView):
     def post(self, request):
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid():
-            # send_mail('Video Aggregation', 'Videolink: {"http://localhost:8000/media"/{output_file}}', settings.EMAIL_HOST_USER, ["codemaster9428@gmail.com"], fail_silently=False,)
-            return Response({
-                "status": True,
-                "data": serializer.validated_data
-            }, status=200)
-        return Response({"status": False, "data": {"msg": "Invalid email or password"}}, status=200)
+            if serializer.validated_data['status']:
+                # send_mail('Video Aggregation', 'Videolink: {"http://localhost:8000/media"/{output_file}}', settings.EMAIL_HOST_USER, ["codemaster9428@gmail.com"], fail_silently=False,)
+                return Response({
+                    "status": True,
+                    "data": serializer.validated_data
+                }, status=200)
+            else:
+                return Response({"status": False, "data": {"msg": "Please wait until admin allows you"}}, status=status.HTTP_423_LOCKED)
+        return Response({"status": False, "data": {"msg": "Invalid email or password"}}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 class UserUpdateAPIView(APIView):
     permission_classes = [IsAdmin]

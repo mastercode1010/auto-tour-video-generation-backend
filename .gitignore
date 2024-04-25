@@ -2,7 +2,6 @@ user/__pycache__/
 user/migrations/
 management/__pycache__/
 management/migrations/
-media/
 headers/
 gmailsender/credentials.json
 gmailsender/token.pickle
@@ -24,3 +23,4 @@ coloringpage/__pycache__
 coloringpage/migrations
 emailmanagement/migrations
 emailmanagement/__pycache__
+staticfiles/
