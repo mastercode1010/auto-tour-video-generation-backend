@@ -14,7 +14,8 @@ from user.models import User
 
 class CameraAPIView(APIView):
     permission_classes = [IsAdminOrCustomer]
-    
+    parser_classes = (MultiPartParser, FormParser)
+
     def get(self, request):
         customer = request.user
         if customer is not None:
@@ -23,6 +24,47 @@ class CameraAPIView(APIView):
             return Response({'status': True, 'data': serializer.data})
         else:
             return Response({'status': False, 'error': 'You have to login in this site.'}, status=400)
+        
+    def post(self, request):
+        serializer = CameraSerializer(data = request.data)
+        if serializer.is_valid():
+            serializer.save(customer = request.user)
+            return Response({"status": True, "data": serializer.data}, status=status.HTTP_201_CREATED)
+        return Response({"status": False, "data": {"msg": serializer.errors["non_field_errors"][0]}}, status=status.HTTP_400_BAD_REQUEST)
+    
+class CameraUpdateAPIView(APIView):
+    permission_classes = [IsAdminOrCustomer]
+    parser_classes = (MultiPartParser, FormParser)
+        
+    def post(self, request):
+        # print(request.data)
+        serializer = CameraSerializer(data = request.data)
+        if serializer.is_valid():
+            serializer.save(customer = request.user)
+            return Response({"status": True, "data": serializer.data}, status=status.HTTP_201_CREATED)
+        return Response({"status": False, "data": {"msg": serializer.errors}}, status=status.HTTP_400_BAD_REQUEST)
+    
+class CameraDeleteAPIView(APIView):
+    permission_classes = [IsAdminOrCustomer]
+    parser_classes = (MultiPartParser, FormParser)
+        
+    def post(self, request):
+        camera_id = request.data.get('id')
+        if not camera_id:
+            return Response({"status": False, "data": {"msg": "Header ID is required."}}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            camera = Camera.objects.get(id=camera_id, customer=request.user)
+            camera.delete()
+            return Response({"status": True, "data": {"msg": "Successfully Deleted."}}, status=status.HTTP_403_FORBIDDEN)
+        except Camera.DoesNotExist:
+            try:
+                camera_existence = Camera.objects.get(id = camera_id)
+                return Response({"status": False, "data": {"msg": "You don't have permission to delete this camera."}}, status=status.HTTP_403_FORBIDDEN)
+            except Camera.DoesNotExist:
+                return Response({"status": False, "data": {"msg": "Camera not found."}}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"status": False, "data": {"msg": str(e)}}, status=status.HTTP_400_BAD_REQUEST)
+            
 
 class HeaderAPIView(APIView):
     
