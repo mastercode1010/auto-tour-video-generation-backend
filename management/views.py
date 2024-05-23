@@ -35,7 +35,17 @@ class CameraAPIView(APIView):
 class CameraUpdateAPIView(APIView):
     permission_classes = [IsAdminOrCustomer]
     parser_classes = (MultiPartParser, FormParser)
-        
+    
+    def get(self, request):
+        customer = request.user
+        camera_id = request.data.get('id')
+        if customer is not None:
+            camera = Camera.objects.get(customer=customer.pk, id = camera_id)
+            serializer = CameraSerializer(camera)
+            return Response({'status': True, 'data': serializer.data})
+        else:
+            return Response({'status': False, 'error': 'You have to login in this site.'}, status=400)
+
     def post(self, request):
         camera_id = request.data.get('id')
         customer = request.user
