@@ -37,17 +37,36 @@ class CameraUpdateAPIView(APIView):
     parser_classes = (MultiPartParser, FormParser)
         
     def post(self, request):
-        # print(request.data)
-        serializer = CameraSerializer(data = request.data)
-        if serializer.is_valid():
-            serializer.save(customer = request.user)
-            return Response({"status": True, "data": serializer.data}, status=status.HTTP_201_CREATED)
-        return Response({"status": False, "data": {"msg": serializer.errors}}, status=status.HTTP_400_BAD_REQUEST)
+        camera_id = request.data.get('id')
+        customer = request.user
+        try:
+            camera = Camera.objects.get(id=camera_id, customer=request.user)
+            data = request.data
+            data = {
+                "camera_name": data.get("camera_name"),
+                "camera_ip": data.get("camera_ip"),
+                "camera_port": data.get("camera_port"),
+                "password": data.get("password"),
+                "camera_user_name": data.get("camera_user_name")
+            }
+            serializer = CameraSerializer(camera, data=data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"status": True, "data": serializer.data}, status=status.HTTP_200_OK)
+            return Response({"status": False, "data": {"msg": serializer.errors}})
+        except Camera.DoesNotExist:
+            try:
+                camera_existence = Camera.objects.get(id = camera_id)
+                return Response({"status": False, "data": {"msg": "You don't have permission to delete this camera."}}, status=status.HTTP_403_FORBIDDEN)
+            except Camera.DoesNotExist:
+                return Response({"status": False, "data": {"msg": "Camera not found."}}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"status": False, "data": {"msg": str(e)}}, status=status.HTTP_400_BAD_REQUEST)
     
 class CameraDeleteAPIView(APIView):
     permission_classes = [IsAdminOrCustomer]
     parser_classes = (MultiPartParser, FormParser)
-        
+    
     def post(self, request):
         camera_id = request.data.get('id')
         if not camera_id:
@@ -65,7 +84,6 @@ class CameraDeleteAPIView(APIView):
         except Exception as e:
             return Response({"status": False, "data": {"msg": str(e)}}, status=status.HTTP_400_BAD_REQUEST)
             
-
 class HeaderAPIView(APIView):
     
     permission_classes = [IsAuthenticated]

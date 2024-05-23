@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import ColoringPageListCreateAPIView, ColoringPageDetailAPIView, ColoringPageDeleteAPIView
+from .views import ColoringPageListCreateAPIView, ColoringPageDetailAPIView, ColoringPageDeleteAPIView, SendColoringPage
 
 urlpatterns = [
     path('add', ColoringPageListCreateAPIView.as_view(), name='coloringpage_registeration'),
@@ -7,4 +7,5 @@ urlpatterns = [
     path('get/<int:pk>', ColoringPageDetailAPIView.as_view(), name='get-coloringpage-by-id'),
     path('delete', ColoringPageDeleteAPIView.as_view(), name='coloringpage_delete'),
     path('update', ColoringPageDetailAPIView.as_view(), name='coloringpage-update'),
+    path('sendColoringPDF', SendColoringPage.as_view(), name='coloringpage-update'),
 ]

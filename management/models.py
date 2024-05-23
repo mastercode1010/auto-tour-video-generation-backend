@@ -64,6 +64,35 @@ class Header(models.Model):
             
     class Meta:
         db_table = 'header_tbl'
+
+class Video(models.Model):
+    customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    video_path = models.FileField(upload_to='videos/')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    thumbnail = models.ImageField(upload_to='videos/thumbnail/', null=True, blank=True)
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)  # Call the real save() method first.
+        if not self.thumbnail:  # Check if the thumbnail already exists.
+            self.generate_thumbnail()
+
+    def generate_thumbnail(self):
+        clip = VideoFileClip(self.video_path.path)
+        temp_thumb = io.BytesIO()
+        # Extract frame as an image
+        frame = clip.get_frame(t=1)
+        image = Image.fromarray(frame)
+        image.save(temp_thumb, format='JPEG')  # Explicitly specify the format
+        temp_thumb.seek(0)
+
+        self.thumbnail.save(f"{self.pk}_thumbnail.jpg", ContentFile(temp_thumb.read()), save=False)
+        temp_thumb.close()
+        clip.close()
+        self.save()
+
+    class Meta:
+        db_table = 'video_tbl'
         
 class Footer(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
