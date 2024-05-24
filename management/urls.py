@@ -18,5 +18,5 @@ urlpatterns = [
     path('camera/add', CameraAPIView.as_view(), name='camera-add'),
     path('camera/delete', CameraDeleteAPIView.as_view(), name='camera-delete'),
     path('camera/update', CameraUpdateAPIView.as_view(), name='camera-update'),
-    path('camera/getbyid', CameraUpdateAPIView.as_view(), name='camera-update')
+    path('camera/getbyid', CameraUpdateAPIView.as_view(), name='camera-get-by-id')
 ]

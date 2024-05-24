@@ -13,7 +13,7 @@ class Client(models.Model):
     be_shown_public_business = models.BooleanField(default=False)
     be_shown_social_media = models.BooleanField(default=False)
     paid_status = models.BooleanField(default = False)
-    rfid_tag = models.CharField(max_length = 255)
+    rfid_tag = models.CharField(max_length = 255, null=True, blank=True)
     tour_status = models.BooleanField(default = False)
     date = models.DateTimeField(auto_now=True)
 
@@ -23,7 +23,7 @@ class Client(models.Model):
 class Children(models.Model):
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     children_name = models.CharField(max_length=255)
-    rfid_tag = models.CharField(max_length = 255)
+    rfid_tag = models.CharField(max_length = 255, null=True, blank=True)
     date = models.DateTimeField(auto_now=True)
 
     class Meta:

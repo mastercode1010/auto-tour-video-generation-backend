@@ -8,6 +8,9 @@ class CameraSerializer(serializers.ModelSerializer):
         fields = ['id', 'camera_name', 'camera_user_name', 'camera_ip', 'camera_port', 'password', 'created_at', 'updated_at']
     
     def validate(self, attrs):
+        if self.instance:
+            return attrs
+
         camera_ip = attrs.get('camera_ip')
         camera_port = attrs.get('camera_port')
         if Camera.objects.filter(camera_ip=camera_ip, camera_port=camera_port).exists():

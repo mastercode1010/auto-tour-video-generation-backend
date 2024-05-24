@@ -38,17 +38,16 @@ class CameraUpdateAPIView(APIView):
     
     def get(self, request):
         customer = request.user
-        camera_id = request.data.get('id')
+        camera_id = request.query_params.get('id')
         if customer is not None:
-            camera = Camera.objects.get(customer=customer.pk, id = camera_id)
+            camera = Camera.objects.get(customer=customer, id = camera_id)
             serializer = CameraSerializer(camera)
-            return Response({'status': True, 'data': serializer.data})
+            return Response({'status': True, 'data': serializer.data}, status=status.HTTP_200_OK)
         else:
             return Response({'status': False, 'error': 'You have to login in this site.'}, status=400)
 
     def post(self, request):
         camera_id = request.data.get('id')
-        customer = request.user
         try:
             camera = Camera.objects.get(id=camera_id, customer=request.user)
             data = request.data
@@ -84,7 +83,7 @@ class CameraDeleteAPIView(APIView):
         try:
             camera = Camera.objects.get(id=camera_id, customer=request.user)
             camera.delete()
-            return Response({"status": True, "data": {"msg": "Successfully Deleted."}}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"status": True, "data": {"msg": "Successfully Deleted."}}, status=status.HTTP_200_OK)
         except Camera.DoesNotExist:
             try:
                 camera_existence = Camera.objects.get(id = camera_id)
