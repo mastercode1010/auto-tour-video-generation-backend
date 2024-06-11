@@ -1,8 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Header, Footer, Camera, CameraVoice
-from .serializers import HeaderSerializer, FooterSerializer, CameraVoiceSerializer, CameraSerializer
+from .models import Header, Footer, Camera, CameraVoice, Video
+from .serializers import HeaderSerializer, FooterSerializer, CameraVoiceSerializer, CameraSerializer, VideoSerializer
 from rest_framework.permissions import IsAuthenticated
 from user.permissions import IsAdmin, IsCustomer, IsAdminOrCustomer, IsOwnerOrAdmin, IsUserOrAdmin
 from django.core.files.storage import default_storage
@@ -11,6 +11,32 @@ from django.shortcuts import get_object_or_404
 from django.http import Http404
 from django.http import JsonResponse
 from user.models import User
+from customer.models import Client
+from customer.serializers import ClientSerializer
+import os
+from django.conf import settings
+from moviepy.editor import VideoFileClip, concatenate_videoclips
+from datetime import datetime
+import hashlib
+import subprocess
+from django.core.mail import EmailMessage
+from rest_framework.parsers import JSONParser
+
+def generate_unique_filename(original_filename, username):
+    current_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    hash_input = f"{original_filename}{username}{current_datetime}".encode('utf-8')
+    hash_object = hashlib.sha256(hash_input)
+    hash_hex = hash_object.hexdigest()[:16]  # Get the first 16 characters of the hash
+    name, _ = os.path.splitext(original_filename)
+    return f"{name}_{hash_hex}.mp4"
+
+def convert_webm_to_mp4(webm_path, mp4_path):
+    command = [
+        'ffmpeg', '-i', webm_path, '-c:v', 'libx264', '-crf', '23', '-preset', 'medium', '-c:a', 'aac', '-b:a', '128k', '-movflags', 'faststart', mp4_path
+    ]
+    result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if result.returncode != 0:
+        raise ValueError(f"Error converting webm to mp4: {result.stderr.decode('utf-8')}")
 
 class CameraAPIView(APIView):
     permission_classes = [IsAdminOrCustomer]
@@ -120,17 +146,86 @@ class HeaderAddAPIView(APIView):
             serializer.save(user=request.user)
             return Response({"status": True, "data": serializer.data}, status=status.HTTP_201_CREATED)
         return Response({"status": False, "data": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-
-class HeaderDeleteAPIView(APIView):
     
+class VideoAddAPIView(APIView):
+
+    permission_classes = [IsAdminOrCustomer]
+    parser_classes = (MultiPartParser, FormParser)
+
+    def post(self, request):
+        serializer = VideoSerializer(data=request.data)
+        if serializer.is_valid():
+            header = Header.objects.filter(user=request.user).order_by('?').first()
+            footer = Footer.objects.filter(user=request.user).order_by('?').first()
+
+            if not header or not footer:
+                return Response({'error': 'Header or footer not available'}, status=status.HTTP_400_BAD_REQUEST)
+            uploaded_video = request.FILES['video_path']
+            original_filename = uploaded_video.name
+            temp_video_path = os.path.join(settings.MEDIA_ROOT, f'temp_uploaded_video_{request.user.username}.webm')
+            converted_video_path = os.path.join(settings.MEDIA_ROOT, f'converted_video_{request.user.username}.mp4')
+            with open(temp_video_path, 'wb+') as temp_file:
+                for chunk in uploaded_video.chunks():
+                    temp_file.write(chunk)
+            convert_webm_to_mp4(temp_video_path, converted_video_path)
+            try:
+                header_clip = VideoFileClip(header.video_path.path)
+                uploaded_clip = VideoFileClip(converted_video_path)
+                footer_clip = VideoFileClip(footer.video_path.path)
+                final_clip = concatenate_videoclips([header_clip, uploaded_clip, footer_clip], method="compose")
+                final_video_name = generate_unique_filename(original_filename, request.user.username)
+                final_video_relative_path = os.path.join('videos', final_video_name)
+                final_video_absolute_path = os.path.join(settings.MEDIA_ROOT, final_video_relative_path)
+                os.makedirs(os.path.dirname(final_video_absolute_path), exist_ok=True)
+                final_clip.write_videofile(final_video_absolute_path, codec='libx264')
+                serializer.save(video_path=final_video_relative_path, customer = request.user)
+                data = serializer.data
+                data["customer_id"] = request.user.pk
+                return Response({"status": True, "data": data}, status=status.HTTP_201_CREATED)
+            finally:
+                header_clip.reader.close()
+                footer_clip.reader.close()
+                uploaded_clip.reader.close()
+                if os.path.exists(temp_video_path):
+                    os.remove(temp_video_path)
+                if os.path.exists(converted_video_path):
+                    os.remove(converted_video_path)
+
+class VideoDeleteAPIView(APIView):
     parser_classes = (MultiPartParser, FormParser)
     permission_classes = [IsAdminOrCustomer]
-    
+    def post(self, request, *args, **kwargs):
+        video_id = request.data.get('video_id')
+        if not video_id:
+            return Response({"status": False, "data": {"msg": "Video ID is required."}}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            video = Video.objects.get(pk=video_id, user=request.user)
+            # Delete associated video file
+            if video.video_path:
+                if default_storage.exists(video.video_path.name):
+                    default_storage.delete(video.video_path.name)
+            # Delete associated thumbnail file
+            if video.thumbnail:
+                if default_storage.exists(video.thumbnail.name):
+                    default_storage.delete(video.thumbnail.name)
+            video.delete()
+            return Response({"status": True}, status=status.HTTP_200_OK)
+        except Video.DoesNotExist:
+            try:
+                header_existence = Video.objects.get(pk = video_id)
+                return Response({"status": False, "data": {"msg": "You don't have permission to delete this data."}}, status=status.HTTP_403_FORBIDDEN)
+            except Video.DoesNotExist:
+                return Response({"status": False, "data": {"msg": "Video not found."}}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"status": False, "data": {"msg": str(e)}}, status=status.HTTP_400_BAD_REQUEST)
+
+class HeaderDeleteAPIView(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+    permission_classes = [IsAdminOrCustomer]
     def post(self, request, *args, **kwargs):
         header_id = request.data.get('header_id')
         if not header_id:
             return Response({"status": False, "data": {"msg": "Header ID is required."}}, status=status.HTTP_400_BAD_REQUEST)
-        
         try:
             header = Header.objects.get(pk=header_id, user=request.user)
             # Delete associated video file
@@ -232,9 +327,7 @@ class CameraVoiceAPIView(APIView):
                         },
                         "camera_data": {
                             "id": cameradata.pk,
-                            "camera_seq_number": cameradata.camera_seq_number,
                             "camera_name" : cameradata.camera_name,
-                            "camera_type" : cameradata.camera_type,
                         },
                         "wait_for_sec": serializer.data.get('wait_for_sec'),
                         "enter_or_exit_code": serializer.data.get('enter_or_exit_code'),
@@ -272,9 +365,7 @@ class CameraVoiceAPIView(APIView):
                             },
                             "camera_data": {
                                 "id": cameradata.pk,
-                                "camera_seq_number": cameradata.camera_seq_number,
                                 "camera_name" : cameradata.camera_name,
-                                "camera_type" : cameradata.camera_type,
                             },
                             "wait_for_sec": serializer.data.get('wait_for_sec'),
                             "enter_or_exit_code": serializer.data.get('enter_or_exit_code'),
@@ -316,9 +407,7 @@ class CameraVoiceByCameraIdAPIView(APIView):
                             },
                             "camera_data": {
                                 "id": cameradata.pk,
-                                "camera_seq_number": cameradata.camera_seq_number,
                                 "camera_name" : cameradata.camera_name,
-                                "camera_type" : cameradata.camera_type,
                             },
                             "wait_for_sec": item['wait_for_sec'],
                             "enter_or_exit_code": item['enter_or_exit_code'],
@@ -356,9 +445,7 @@ class GetAllCameraVoiceAPIView(APIView):
                         },
                         "camera_data": {
                             "id": cameradata.pk,
-                            "camera_seq_number": cameradata.camera_seq_number,
                             "camera_name" : cameradata.camera_name,
-                            "camera_type" : cameradata.camera_type,
                         },
                         "wait_for_sec": item['wait_for_sec'],
                         "enter_or_exit_code": item['enter_or_exit_code'],
@@ -424,13 +511,11 @@ class UpdateCameraVoiceAPIView(APIView):
                             "id": id, 
                             "customer_data": {
                                 "id": user.pk,
-                                "username": user.username          
+                                "username": user.username
                             },
                             "camera_data": {
                                 "id": camera.pk,
-                                "camera_seq_number": camera.camera_seq_number,
                                 "camera_name" : camera.camera_name,
-                                "camera_type" : camera.camera_type,
                             },
                             "wait_for_sec": cameravoice_serializer.data.get('wait_for_sec'),
                             "enter_or_exit_code": cameravoice_serializer.data.get('enter_or_exit_code'),
@@ -445,3 +530,63 @@ class UpdateCameraVoiceAPIView(APIView):
                 return Response({"status": False, "data": {"msg": "You don't have permission to update this data."}}, status=status.HTTP_403_FORBIDDEN)
             except CameraVoice.DoesNotExist:
                 return Response({"status": False, "data": {"msg": "CameraVoice Data Doesn't Exist."}}, status=status.HTTP_404_NOT_FOUND)
+            
+class SendVideoUsingEmailAPIView(APIView):
+
+    permission_classes = [IsAdminOrCustomer]
+    parser_classes = (JSONParser,)
+
+    def post(self, request):
+        user = request.user
+        client_list = request.data.get("client_list", [])
+        video_id = request.data.get("video_id")
+        tour_status = request.data.get("tour_status")
+
+        if not client_list or not video_id or not tour_status:
+            return Response({"error": "Missing required fields"}, status=status.HTTP_400_BAD_REQUEST)
+
+        video = get_object_or_404(Video, pk=video_id)
+        video_serializer = VideoSerializer(video)
+        video_data = video_serializer.data
+
+        email_list = []
+        update_client = []
+
+        for client_id in client_list:
+            client = get_object_or_404(Client, pk=client_id)
+            client_data = ClientSerializer(client).data
+            client_data['tour_status'] = tour_status
+
+            client_serializer = ClientSerializer(client, data=client_data, partial=True)
+            if client_serializer.is_valid():
+                client_serializer.save()
+                email_list.append(client.client_email)
+            else:
+                return Response({"error": client_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        if email_list:
+            try:
+                print(video_data['video_path'])
+                self.send_email_with_video(email_list, video_data['video_path'])
+                return Response({'status': 'Video sent successfully.'}, status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"error": "No valid email addresses found"}, status=status.HTTP_400_BAD_REQUEST)
+
+    def send_email_with_video(self, email_list, video_relative_path):
+        subject = 'VideoFile'
+        body = 'This is your tour video file. Thanks for visiting our 1880 town.'
+        from_email = 'otis1880town@gmail.com'
+
+        email_message = EmailMessage(subject, body, from_email, email_list)
+        # print(video_relative_path.lstrip('/\\'))
+        video_relative_path = video_relative_path.lstrip('/\\')
+        if video_relative_path.startswith('media/'):
+            video_relative_path = video_relative_path[6:]
+        video_path = os.path.join(settings.MEDIA_ROOT, video_relative_path)
+        print(video_path)
+        if not os.path.exists(video_path):
+            raise FileNotFoundError(f"Video file {video_path} not found on the server.")
+
+        email_message.attach_file(video_path)
+        email_message.send()

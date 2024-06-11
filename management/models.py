@@ -7,6 +7,7 @@ from io import BytesIO
 from moviepy.editor import VideoFileClip
 from PIL import Image
 import io
+import subprocess
 
 os.environ["TMPDIR"] = "../media/thumbnailtemp"
 
@@ -67,7 +68,7 @@ class Header(models.Model):
 
 class Video(models.Model):
     customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    video_path = models.FileField(upload_to='videos/')
+    video_path = models.FileField(upload_to='videos/', max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     thumbnail = models.ImageField(upload_to='videos/thumbnail/', null=True, blank=True)
@@ -90,6 +91,21 @@ class Video(models.Model):
         temp_thumb.close()
         clip.close()
         self.save()
+    # def generate_thumbnail(self):
+    #     video_path = self.video_path.path
+    #     thumb_path = f"{settings.MEDIA_ROOT}/headers/thumbnail/{self.pk}_thumbnail.jpg"
+    #     # Use FFmpeg to extract a frame at 1 second
+    #     command = [
+    #         'ffmpeg', '-i', video_path, '-ss', '00:00:01.000', '-vframes', '1', thumb_path
+    #     ]
+    #     try:
+    #         subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    #         with open(thumb_path, 'rb') as f:
+    #             self.thumbnail.save(f"{self.pk}_thumbnail.jpg", ContentFile(f.read()), save=False)
+    #     except subprocess.CalledProcessError as e:
+    #         print(f"FFmpeg error: {e.stderr}")
+
+    #     self.save()
 
     class Meta:
         db_table = 'video_tbl'

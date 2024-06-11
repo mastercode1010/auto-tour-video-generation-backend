@@ -26,5 +26,6 @@ urlpatterns = [
     path('api/v1/customer/', include('customer.urls')),
     path('api/v1/coloringpages/', include('coloringpage.urls')),
     path('api/v1/email/', include('emailmanagement.urls')),
-    re_path('', index, name='react_app'),
+    path('api/v1/thirdparty/', include('thirdparty.urls'))
+    # re_path('', index, name='react_app'),
 ]  + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

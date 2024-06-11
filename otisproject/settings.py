@@ -53,7 +53,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'customer',
     'coloringpage',
-    'emailmanagement'
+    'emailmanagement',
+    'thirdparty'
 ]
 
 MIDDLEWARE = [

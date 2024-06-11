@@ -116,3 +116,18 @@ class ClientUpdateAPIView(APIView):
             return Response({'status': True, 'data': client_serializer.data[0]})
         else:
             return Response({'status': False, 'error': serializer.error}, status=400)
+        
+class GetClientforVideoAPIView(APIView):
+    permission_classes = [IsAdminOrCustomer]  # Or adjust as per your security requirements
+
+    def get(self, request):
+        customer = request.user
+        if customer is not None:
+            if customer.user_type == 1:
+                return Response({'status': True, 'data': "You don't have any permission to see the client list."}, status=status.HTTP_403_FORBIDDEN)
+            elif customer.user_type == 2:
+                clients = Client.objects.filter(customer=customer.pk, paid_status = True, tour_status = False)
+            serializer = ClientSerializer(clients, many=True)
+            return Response({'status': True, 'data': serializer.data})
+        else:
+            return Response({'status': False, 'error': 'Customer ID is required'}, status=400)

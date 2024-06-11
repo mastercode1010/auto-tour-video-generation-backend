@@ -35,9 +35,7 @@ class ExitEmailSendListCreateAPIView(APIView):
                 },
                 "camera": {
                     "id": camera.id,
-                    "camera_seq_number": camera.camera_seq_number,
                     "camera_name": camera.camera_name,
-                    "camera_type": camera.camera_type
                 },
                 "wait_for_sec": serializer.data[i]['wait_for_sec'],
                 "text": serializer.data[i]['text'],
@@ -71,9 +69,7 @@ class ExitEmailSendListCreateAPIView(APIView):
                 },
                 "camera": {
                     "id": camera.id,
-                    "camera_seq_number": camera.camera_seq_number,
                     "camera_name": camera.camera_name,
-                    "camera_type": camera.camera_type
                 },
                 "wait_for_sec": serializer.data['wait_for_sec'],
                 "text": serializer.data['text'],
@@ -110,9 +106,7 @@ class ExitEmailSendDetailAPIView(APIView):
             },
             "camera": {
                 "id": camera.id,
-                "camera_seq_number": camera.camera_seq_number,
                 "camera_name": camera.camera_name,
-                "camera_type": camera.camera_type
             },
             "wait_for_sec": serializer.data['wait_for_sec'],
             "text": serializer.data['text'],
@@ -145,9 +139,7 @@ class ExitEmailSendDetailAPIView(APIView):
                     },
                     "camera": {
                         "id": camera.id,
-                        "camera_seq_number": camera.camera_seq_number,
                         "camera_name": camera.camera_name,
-                        "camera_type": camera.camera_type
                     },
                     "wait_for_sec": serializer.data['wait_for_sec'],
                     "text": serializer.data['text'],

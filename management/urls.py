@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import HeaderAPIView, HeaderAddAPIView, HeaderDeleteAPIView, FooterAddAPIView, FooterAPIView, FooterDeleteAPIView, CameraVoiceAPIView, CameraVoiceByCameraIdAPIView, GetAllCameraVoiceAPIView, DeleteCameraVoiceAPIView, UpdateCameraVoiceAPIView, CameraAPIView, CameraDeleteAPIView, CameraUpdateAPIView
+from .views import HeaderAPIView, HeaderAddAPIView, HeaderDeleteAPIView, FooterAddAPIView, FooterAPIView, FooterDeleteAPIView, CameraVoiceAPIView, CameraVoiceByCameraIdAPIView, GetAllCameraVoiceAPIView, DeleteCameraVoiceAPIView, UpdateCameraVoiceAPIView, CameraAPIView, CameraDeleteAPIView, CameraUpdateAPIView, VideoAddAPIView, VideoDeleteAPIView, SendVideoUsingEmailAPIView
 
 urlpatterns = [
     path('header', HeaderAPIView.as_view(), name='header_api'),
@@ -18,5 +18,8 @@ urlpatterns = [
     path('camera/add', CameraAPIView.as_view(), name='camera-add'),
     path('camera/delete', CameraDeleteAPIView.as_view(), name='camera-delete'),
     path('camera/update', CameraUpdateAPIView.as_view(), name='camera-update'),
-    path('camera/getbyid', CameraUpdateAPIView.as_view(), name='camera-get-by-id')
+    path('camera/getbyid', CameraUpdateAPIView.as_view(), name='camera-get-by-id'),
+    path('video/add', VideoAddAPIView.as_view(), name='video_add_api'),
+    path('video/delete', VideoDeleteAPIView.as_view(), name='video_delete_api'),
+    path('video/sendemail', SendVideoUsingEmailAPIView.as_view(), name='video_delete_api')
 ]

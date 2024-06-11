@@ -43,8 +43,8 @@ class VideoSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         # Create a new Header instance using the validated data.
-        header_instance = Header.objects.create(**validated_data)
-        return header_instance
+        video_instance = Video.objects.create(**validated_data)
+        return video_instance
 
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():
